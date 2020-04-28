@@ -14,6 +14,7 @@ int main(void){
 
     FILE *dataset, *bin;
 
+    CABECALHO *header;
 
     scanf("%d", &opc);
 
@@ -49,10 +50,9 @@ int main(void){
 
             scanf("%s", arqBin);
 
-            if((bin = fopen(arqBin, "r+b")) == NULL){
-                printf("Falha no processamento do arquivo.\n");
-                return 0;
-            }
+            if((bin = fopen(arqBin, "r+b")) == NULL) printf("Falha no processamento do arquivo.\n");
+                
+            if(lerBinario(bin) == ERRO) printf("Falha no processamento do arquivo.\n");
             
             break;
     }

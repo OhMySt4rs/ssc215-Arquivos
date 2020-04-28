@@ -1,3 +1,7 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <registro.h>
+
 /* Registro Cabeçalho (header record) 
  * Em geral, é interessante manter algumas informações sobre o arquivo
  * para uso futuro 
@@ -68,3 +72,61 @@ struct registro{
 // Caso registro inexistente
 // "Registro inexistente."
 
+CABECALHO* lerCabecalhoBin(FILE* bin){
+    CABECALHO *aux = calloc(1, sizeof(CABECALHO)); 
+    
+    if(aux == NULL) return aux;
+    
+    fread(aux->status, sizeof(unsigned char), 1, bin);
+    fread(aux->RRNproxRegistro, sizeof(int), 1, bin);
+    fread(aux->numeroRegistrosInseridos, sizeof(int), 1, bin);
+    fread(aux->numeroRegistrosRemovidos, sizeof(int), 1, bin);
+    fread(aux->numeroRegistrosAtualizados, sizeof(int), 1, bin);
+    fread(aux->lixo, sizeof(char), 111, bin);
+
+    return aux;
+}
+
+int lerBinario(FILE*bin){
+    CABECALHO *header;
+    REGISTRO aux;
+    
+    int i;
+
+    if((header = lerCabecalhoBin(bin)) == NULL || header->status == 0) return ERRO;
+
+    if(header->numeroRegistrosInseridos == 0){
+        printf("Registro inexistente.\n");
+        return SUCESSO;
+    }
+    
+    fseek(bin, 128, SEEK_SET);
+
+    for(i = 0; i < header->numeroRegistrosInseridos; i++){
+        fseek(bin, 128 + (128 * i), SEEK_SET);
+        imprimirRegistroBin(bin);
+    }
+    
+}
+
+int imprimirRegistroBin(bin){
+    REGISTRO aux;
+    int tamCidadeMae, tamCidadeBebe;
+
+    fread(tamCidadeMae, sizeof(int), 1, bin);
+
+    if(tamCidadeMae == -1) return regDeletado;
+
+}
+
+
+ /* tamanho do campo cidadeMae
+  * tamanho do campo cidadeBebe
+  * cidadeMae
+  * cidadeBebe
+  * idNascimento
+  * idadeMae
+  * dataNascimento
+  * sexoBebe
+  * estadoMae
+  * estadoBebe  */   
