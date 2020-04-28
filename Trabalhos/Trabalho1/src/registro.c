@@ -7,20 +7,20 @@
  * que ser mais elaborado 
  */ 
 
-typedef struct registroCabecalho{
-    char status;                    // Sempre que uma modificacao inicia assume `0`, se concluir com sucesso assume `1`
+struct registroCabecalho{
+    unsigned char status;           // Sempre que uma modificacao inicia assume `0`, se concluir com sucesso assume `1`
     int RRNproxRegistro;            // Byteoffset do proximo registro
     int numeroRegistrosInseridos;   // Inicialmente vale 0 e incrementa sempre que existir um novo registro
     int numeroRegistrosRemovidos;   // Os registros ser'ao logicamente removidos, incrementam sempre que isso ocorrer
     int numeroRegistrosAtualizados; // Sempre que alguma informacao em um registro for atualizada, ele sera incrmentado
     char lixo[111];                 // Armazena apenas `$` para manter o padrao de tamanho de 128 bites
-}CABECALHO;
+};
 
 /* Organizacao hibrida de registros, haverao campos de tamanho fixo, campo de tamanho variavel 
  * (indicando o tamanho do campo) e delimitador entre registros `#`
  */
 
-typedef struct registro{
+struct registro{
 
     // Campos de tamanho fixo: tamanho maximo de 23 bytes
     int idNascimento;               // código sequencial que identifica univocamente cada registro do arquivo de dados)
@@ -33,19 +33,19 @@ typedef struct registro{
     // Campos  de  tamanho  variável: tamanho  máximo  de 105 bytes incluindo  os espaços reservados para os indicadores de tamanho
     char* cidadeMae;                // cidade de residência da mãe
     char* cidadeBebe;               // cidade na qual o bebê nasceu
-}REGISTRO;
+};
 
 // No arquivo .csv, o separador de campos é vírgula `,`
 /* Em armazenar registro devemos seguir a ordem
  * tamanho do campo cidadeMae
  * tamanho do campo cidadeBebe
- * cidadeMae 
- * cidadeBebe 
- * idNascimento 
- * idadeMae 
- * dataNascimento 
+ * cidadeMae
+ * cidadeBebe
+ * idNascimento
+ * idadeMae
+ * dataNascimento
  * sexoBebe
- * estadoMae 
+ * estadoMae
  * estadoBebe
  */ 
 
