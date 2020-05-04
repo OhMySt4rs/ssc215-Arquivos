@@ -1,6 +1,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <registro.h>
+#include <string.h>
+
 
 /* Registro Cabeçalho (header record) 
  * Em geral, é interessante manter algumas informações sobre o arquivo
@@ -29,11 +31,13 @@ struct registro{
     // Campos de tamanho fixo: tamanho maximo de 23 bytes
     int idNascimento;               // código sequencial que identifica univocamente cada registro do arquivo de dados)
     int idadeMae;                   // idade da mãe do bebê
-    char dataNascimento[10];        // formato AAAA-MM-DD; data de nascimento do bebê
+    char dataNascimento[11];        // formato AAAA-MM-DD; data de nascimento do bebê
     char sexoBebe;                  // sexo  do  bebê pode assumir os valores ‘0’(ignorado), ‘1’(masculino) e ‘2’(feminino)
-    char estadoMae[2];              // sigla  do  estado  da cidade de residência da mãe
-    char estadoBebe[2];             // sigla  do  estado  da cidade na qual o bebê nasceu
-    
+    char estadoMae[3];              // sigla  do  estado  da cidade de residência da mãe
+    char estadoBebe[3];             // sigla  do  estado  da cidade na qual o bebê nasceu
+    int tam_CidadeMae;              // tamanho do campo cidadeMae
+    int tam_CidadeBebe;             // tamanho do campo cidadeBebe
+
     // Campos  de  tamanho  variável: tamanho  máximo  de 105 bytes incluindo  os espaços reservados para os indicadores de tamanho
     char* cidadeMae;                // cidade de residência da mãe
     char* cidadeBebe;               // cidade na qual o bebê nasceu
@@ -77,12 +81,13 @@ CABECALHO* lerCabecalhoBin(FILE* bin){
     
     if(aux == NULL) return aux;
     
-    fread(aux->status, sizeof(unsigned char), 1, bin);
-    fread(aux->RRNproxRegistro, sizeof(int), 1, bin);
-    fread(aux->numeroRegistrosInseridos, sizeof(int), 1, bin);
-    fread(aux->numeroRegistrosRemovidos, sizeof(int), 1, bin);
-    fread(aux->numeroRegistrosAtualizados, sizeof(int), 1, bin);
-    fread(aux->lixo, sizeof(char), 111, bin);
+    fread(&(aux->status), sizeof(unsigned char), 1, bin);
+    fread(&(aux->RRNproxRegistro), sizeof(int), 1, bin);
+    fread(&(aux->numeroRegistrosInseridos), sizeof(int), 1, bin);
+    fread(&(aux->numeroRegistrosRemovidos), sizeof(int), 1, bin);
+    fread(&(aux->numeroRegistrosAtualizados), sizeof(int), 1, bin);
+    fread(&(aux->lixo), sizeof(char), 111, bin);
+
 
     return aux;
 }
@@ -94,6 +99,7 @@ int lerBinario(FILE*bin){
     int i;
 
     if((header = lerCabecalhoBin(bin)) == NULL || header->status == 0) return ERRO;
+
 
     if(header->numeroRegistrosInseridos == 0){
         printf("Registro inexistente.\n");
@@ -107,26 +113,50 @@ int lerBinario(FILE*bin){
         imprimirRegistroBin(bin);
     }
     
+    free(header);
 }
 
-int imprimirRegistroBin(bin){
+int imprimirRegistroBin(FILE *bin){
     REGISTRO aux;
-    int tamCidadeMae, tamCidadeBebe;
+    char sexo[10];
 
-    fread(tamCidadeMae, sizeof(int), 1, bin);
+    fread(&(aux.tam_CidadeMae), sizeof(int), 1, bin);
 
-    if(tamCidadeMae == -1) return regDeletado;
+    if(aux.tam_CidadeMae == -1) return regDeletado;
 
+    fread(&(aux.tam_CidadeBebe), sizeof(int), 1, bin);
+    
+    aux.cidadeMae = calloc(aux.tam_CidadeMae + 1, sizeof(char));
+    aux.cidadeBebe = calloc(aux.tam_CidadeBebe + 2, sizeof(char));
+
+    fread(aux.cidadeMae, sizeof(char), aux.tam_CidadeMae, bin);
+    aux.cidadeMae[aux.tam_CidadeMae] = '\0';
+    fread(aux.cidadeBebe, sizeof(char), aux.tam_CidadeBebe, bin);
+    aux.cidadeBebe[aux.tam_CidadeBebe] = '\0';
+    if(aux.tam_CidadeBebe == 0) strcpy(aux.cidadeBebe, "-");
+
+    fseek(bin, 105 - ( 8 + aux.tam_CidadeMae + aux.tam_CidadeBebe ), SEEK_CUR);
+
+    fread(&(aux.idNascimento), sizeof(int), 1, bin);
+    fread(&(aux.idadeMae), sizeof(int), 1, bin);
+    fread(&(aux.dataNascimento), sizeof(char), 10, bin);
+    aux.dataNascimento[10] = '\0';
+    if(strlen(aux.dataNascimento) == 0) strcpy(aux.dataNascimento, "-");
+    fread(&(aux.sexoBebe), sizeof(char), 1, bin);
+    fread(&(aux.estadoMae), sizeof(char), 2, bin);
+    aux.estadoMae[2] = '\0';
+    fread(&(aux.estadoBebe), sizeof(char), 2, bin);
+    aux.estadoBebe[2] = '\0';
+    if(strlen(aux.estadoBebe) == 0) strcpy(aux.estadoBebe, "-");
+    
+
+    if(aux.sexoBebe == '0') strcpy(sexo, "IGNORADO");
+    if(aux.sexoBebe == '1') strcpy(sexo, "MASCULINO"); 
+    if(aux.sexoBebe == '2') strcpy(sexo, "FEMININO"); 
+
+    printf("Nasceu em %s/%s, em %s, um bebe de sexo %s.\n", 
+    aux.cidadeBebe, aux.estadoBebe, aux.dataNascimento, sexo);
+
+    free(aux.cidadeMae);
+    free(aux.cidadeBebe);
 }
-
-
- /* tamanho do campo cidadeMae
-  * tamanho do campo cidadeBebe
-  * cidadeMae
-  * cidadeBebe
-  * idNascimento
-  * idadeMae
-  * dataNascimento
-  * sexoBebe
-  * estadoMae
-  * estadoBebe  */   
