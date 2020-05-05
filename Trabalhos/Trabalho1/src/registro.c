@@ -127,7 +127,10 @@ int lerBinario(FILE *bin){
     
     int i;
 
-    if((header = lerCabecalhoBin(bin)) == NULL || header->status == 0) return ERRO;
+    if((header = lerCabecalhoBin(bin)) == NULL || header->status == '0'){
+        free(header);
+        return ERRO;
+    }
 
 
     if(header->numeroRegistrosInseridos == 0){
@@ -143,6 +146,8 @@ int lerBinario(FILE *bin){
     }
     
     free(header);
+
+    return SUCESSO;
 }
 
 int imprimirRegistroBin(FILE *bin){
@@ -183,9 +188,11 @@ int imprimirRegistroBin(FILE *bin){
     if(aux.sexoBebe == '1') strcpy(sexo, "MASCULINO"); 
     if(aux.sexoBebe == '2') strcpy(sexo, "FEMININO"); 
 
-    printf("Nasceu em %s/%s, em %s, um bebe de sexo %s.\n", 
+    printf("Nasceu em %s/%s, em %s, um bebê de sexo %s.\n", 
     aux.cidadeBebe, aux.estadoBebe, aux.dataNascimento, sexo);
 
     free(aux.cidadeMae);
     free(aux.cidadeBebe);
+
+    return SUCESSO;
 }

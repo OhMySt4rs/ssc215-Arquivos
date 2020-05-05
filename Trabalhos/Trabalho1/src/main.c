@@ -57,11 +57,10 @@ int main(void){
             scanf("%s", arqBin);
 
             if((bin = fopen(arqBin, "r+b")) == NULL) printf("Falha no processamento do arquivo.\n");
-                
-            if(lerBinario(bin) == ERRO) printf("Falha no processamento do arquivo.\n");
-
-            fclose(bin);
-
+            else if(lerBinario(bin) == ERRO){
+                printf("Falha no processamento do arquivo.\n");
+                fclose(bin);
+            }
             break;
     }
     
