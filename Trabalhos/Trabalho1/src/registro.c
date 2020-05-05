@@ -2,7 +2,7 @@
 #include <stdlib.h>
 #include <registro.h>
 #include <string.h>
-
+#include <binarionatela.h>
 
 /* Registro Cabeçalho (header record) 
  * Em geral, é interessante manter algumas informações sobre o arquivo
@@ -88,22 +88,27 @@ CABECALHO* lerCabecalhoBin(FILE* bin){
     fread(&(aux->numeroRegistrosAtualizados), sizeof(int), 1, bin);
     fread(&(aux->lixo), sizeof(char), 111, bin);
 
-
     return aux;
 }
 
 int criaBinario(FILE *src, FILE* dest){
     CABECALHO *header;
-    REGISTRO reg;
+    REGISTRO regLido;
     unsigned char lixo = '$';
     
     if((header = calloc(1, sizeof(CABECALHO))) == NULL) return ERRO;
 
-    reg = lerRegistro(src);
+    regLido = lerRegistro(src);
 
-    printf("%s,%s,%d,%d,%s,%c,%s,%s.", reg.cidadeMae, reg.cidadeBebe,
-    reg.idNascimento, reg.idadeMae, reg.dataNascimento, reg.sexoBebe, 
-    reg.estadoMae, reg.estadoBebe);
+    free(regLido.cidadeMae);
+    free(regLido.cidadeBebe);
+
+    regLido = lerRegistro(src);
+
+    /* --------------------------------------------------------
+    Consegue ler os dados do registro, a gente não consegue determinar um ponto de parada
+    para leitura do arquivo, falta escrever o binário atualizando o header;
+    -----------------------------------------------------------*/
 
     fseek(dest, 128, SEEK_SET);
     
@@ -114,12 +119,30 @@ int criaBinario(FILE *src, FILE* dest){
 REGISTRO lerRegistro(FILE *csv){
     REGISTRO reg;
 
+    char entrada[140], str[8][128];
+
+    fgets(entrada, 140, csv);
+
+    strcpy(str[0], strtok(entrada, ","));
+    trim(str[0]);
+    for(int i = 1; i < 8; i++){
+        strcpy(str[i], strtok(NULL, ","));
+        trim(str[i]);
+    }
     
-    
+    reg.cidadeMae = malloc(sizeof(char)*strlen(str[0]));
+    strncpy(reg.cidadeMae, str[0], strlen(str[0]));
+    reg.cidadeBebe = malloc(sizeof(char)*strlen(str[1]));
+    strncpy(reg.cidadeBebe, str[1],strlen(str[1]));
+    reg.idNascimento = atoi(str[2]);
+    reg.idadeMae = atoi(str[3]);
+    strcpy(reg.dataNascimento, str[4]);
+    reg.sexoBebe = str[5][0];
+    strcpy(reg.estadoMae, str[6]); 
+    strcpy(reg.estadoBebe, str[7]);
+
     return reg;
 }
-
-
 
 int lerBinario(FILE *bin){
     CABECALHO *header;
