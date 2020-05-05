@@ -62,7 +62,7 @@ struct registro{
  * se o campo é do tipo string, então armazena-se ‘\0$$$$$$$$$$$’
  */
 // Para campos de tamanho variavel
-// deve ser armazenado apenas o indicador de tamanho do campo, o qual deve possuir ovalor 0.
+// deve ser armazenado apenas o indicador de tamanho do campo, o qual deve possuir o valor 0.
 
 // Em remover registros, eles serao removidos logicamente
 /* No campo 1 no inicio do registro, "tamanho do campo cidadeMae" caso seja armazenado -1, 
@@ -92,7 +92,36 @@ CABECALHO* lerCabecalhoBin(FILE* bin){
     return aux;
 }
 
-int lerBinario(FILE*bin){
+int criaBinario(FILE *src, FILE* dest){
+    CABECALHO *header;
+    REGISTRO reg;
+    unsigned char lixo = '$';
+    
+    if((header = calloc(1, sizeof(CABECALHO))) == NULL) return ERRO;
+
+    reg = lerRegistro(src);
+
+    printf("%s,%s,%d,%d,%s,%c,%s,%s.", reg.cidadeMae, reg.cidadeBebe,
+    reg.idNascimento, reg.idadeMae, reg.dataNascimento, reg.sexoBebe, 
+    reg.estadoMae, reg.estadoBebe);
+
+    fseek(dest, 128, SEEK_SET);
+    
+    free(header);
+    return SUCESSO;
+}
+
+REGISTRO lerRegistro(FILE *csv){
+    REGISTRO reg;
+
+    
+    
+    return reg;
+}
+
+
+
+int lerBinario(FILE *bin){
     CABECALHO *header;
     REGISTRO aux;
     

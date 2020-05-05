@@ -11,8 +11,8 @@
 typedef struct registroCabecalho CABECALHO;
 typedef struct registro REGISTRO;
 
-
-int lerRegistro(FILE*);                 // Ler o registro do arquivo .csv 
+int criaBinario(FILE*, FILE*);          // Cria um arquivo binário com base no arquivo fonte
+REGISTRO lerRegistro(FILE*);                 // Ler o registro do arquivo .csv 
 
 int criarCabecalhoBin(FILE*);           // Cabeçalho do arquivo binário       
 int inserirRegistroBin(FILE*);          // Inserir registro no binário

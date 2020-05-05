@@ -41,7 +41,13 @@ int main(void){
                 return 0;
             }
 
+            criaBinario(dataset, bin);
+
+            fclose(bin);
+
             binarioNaTela(arqBin);
+
+            fclose(dataset);
 
             break;
 
@@ -53,9 +59,15 @@ int main(void){
             if((bin = fopen(arqBin, "r+b")) == NULL) printf("Falha no processamento do arquivo.\n");
                 
             if(lerBinario(bin) == ERRO) printf("Falha no processamento do arquivo.\n");
-            
+
+            fclose(bin);
+
             break;
     }
-
+    
     // antes de finalizar a operacao, mudar o status para `1` 
+
+    
+
+    return 0;
 }
