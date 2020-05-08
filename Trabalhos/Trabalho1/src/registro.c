@@ -95,6 +95,7 @@ int criaBinario(FILE *src, FILE* dest){
     CABECALHO *header;
     REGISTRO regLido;
     unsigned char lixo = '$';
+    int i = 0;
     
     if((header = calloc(1, sizeof(CABECALHO))) == NULL) return ERRO;
 
@@ -103,43 +104,92 @@ int criaBinario(FILE *src, FILE* dest){
     free(regLido.cidadeMae);
     free(regLido.cidadeBebe);
 
-    regLido = lerRegistro(src);
+    regLido.cidadeMae = NULL;
+    regLido.cidadeBebe = NULL;
+
+    header->RRNproxRegistro = 128;
 
     /* --------------------------------------------------------
     Consegue ler os dados do registro, a gente não consegue determinar um ponto de parada
     para leitura do arquivo, falta escrever o binário atualizando o header;
     -----------------------------------------------------------*/
 
-    fseek(dest, 128, SEEK_SET);
+    while(!feof(dest)){
+        //byteoffset do prox registro
+        fseek(dest, header->RRNproxRegistro, SEEK_SET);
+
+        //armazena os dados
+        regLido = lerRegistro(src);
+        fwrite(&regLido.tam_CidadeMae, sizeof(int), 1, dest);
+        fwrite(&regLido.tam_CidadeBebe, sizeof(int), 1, dest);
+        fwrite(regLido.cidadeMae, sizeof(char), regLido.tam_CidadeMae, dest);
+        fwrite(regLido.cidadeBebe, sizeof(char), regLido.tam_CidadeBebe, dest);
+        int ate = 105 - 8- regLido.tam_CidadeMae - regLido.tam_CidadeBebe;
+        for (i = 0; i < ate; i++) fwrite(&lixo, sizeof(char), 1, dest);
+        fwrite(&regLido.idNascimento, sizeof(int), 1, dest);
+        fwrite(&regLido.idadeMae, sizeof(int), 1, dest);
+        fwrite(&regLido.dataNascimento, sizeof(char), 10, dest);
+        fwrite(&regLido.sexoBebe, sizeof(char), 1, dest);
+        fwrite(&regLido.estadoMae, sizeof(char), 2, dest);
+        fwrite(&regLido.estadoBebe, sizeof(char), 2, dest);
+
+        free(regLido.cidadeMae);
+        free(regLido.cidadeBebe);
+
+        //atualiza o header
+        header->numeroRegistrosInseridos++;
+        header->RRNproxRegistro = header->RRNproxRegistro + 128;
+        i++;
+    }
+
+
+    //armazenar o header
+    header->status = '1';
+    fseek(dest, 0, SEEK_SET);
+    fwrite(&header->status, sizeof(char), 1, dest);
+    fwrite(&header->RRNproxRegistro, sizeof(int), 1, dest);
+    fwrite(&header->numeroRegistrosInseridos, sizeof(int),1, dest);
+    fwrite(&header->numeroRegistrosAtualizados, sizeof(int), 1, dest);
+    fwrite(&header->numeroRegistrosRemovidos, sizeof(int), 1, dest);
+    for(i = 0; i < 111; i++) fwrite(&lixo, sizeof(char), 1, dest);
+
+    free(header); 
     
-    free(header);
     return SUCESSO;
 }
 
 REGISTRO lerRegistro(FILE *csv){
     REGISTRO reg;
 
+    int k = 0, j = 0;
+
     char entrada[140], str[8][128];
 
     fgets(entrada, 140, csv);
 
-    strcpy(str[0], strtok(entrada, ","));
-    trim(str[0]);
-    for(int i = 1; i < 8; i++){
-        strcpy(str[i], strtok(NULL, ","));
-        trim(str[i]);
+    for(int i = 0; i < 8; i++){
+        j = 0;
+        while(entrada[k] != '\n' || entrada[k] == ','){
+            str[i][j] = entrada[k];
+            k++, j++;
+        }  
+        if(entrada[k] == ',') str[i][j] = '\0';
     }
+
+    reg.tam_CidadeMae = strlen(str[0]);
+    reg.cidadeMae = calloc(sizeof(char), reg.tam_CidadeMae);
+    strncpy(reg.cidadeMae, str[0], reg.tam_CidadeMae);
     
-    reg.cidadeMae = malloc(sizeof(char)*strlen(str[0]));
-    strncpy(reg.cidadeMae, str[0], strlen(str[0]));
-    reg.cidadeBebe = malloc(sizeof(char)*strlen(str[1]));
-    strncpy(reg.cidadeBebe, str[1],strlen(str[1]));
+    reg.tam_CidadeBebe = strlen(str[1]);
+    reg.cidadeBebe = calloc(sizeof(char), reg.tam_CidadeBebe);
+    strncpy(reg.cidadeBebe, str[1], reg.tam_CidadeBebe);
+
     reg.idNascimento = atoi(str[2]);
     reg.idadeMae = atoi(str[3]);
-    strcpy(reg.dataNascimento, str[4]);
+    strncpy(reg.dataNascimento, str[4], 10);
     reg.sexoBebe = str[5][0];
-    strcpy(reg.estadoMae, str[6]); 
-    strcpy(reg.estadoBebe, str[7]);
+    strncpy(reg.estadoMae, str[6], 2); 
+    strncpy(reg.estadoBebe, str[7], 2);
 
     return reg;
 }
