@@ -1,17 +1,13 @@
+/* Criado por Mateus de Souza Santos 11366913
+    e Wellington Matos Amaral 11315054
+*/
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <registro.h>
 #include <string.h>
 #include <binarionatela.h>
 
-/* Registro Cabeçalho (header record) 
- * Em geral, é interessante manter algumas informações sobre o arquivo
- * para uso futuro 
- * Essas informações podem ser mantidas em um cabeçalho no início do arquivo
- * A existência de um registro cabeçalho torna um arquivo um objeto auto-descrito
- * o software pode acessar arquivos de forma mais flexível, porém o software tem 
- * que ser mais elaborado 
- */ 
 
 struct registroCabecalho{
     unsigned char status;           // Sempre que uma modificacao inicia assume `0`, se concluir com sucesso assume `1`
@@ -43,38 +39,6 @@ struct registro{
     char* cidadeBebe;               // cidade na qual o bebê nasceu
 };
 
-// No arquivo .csv, o separador de campos é vírgula `,`
-/* Em armazenar registro devemos seguir a ordem
- * tamanho do campo cidadeMae
- * tamanho do campo cidadeBebe
- * cidadeMae
- * cidadeBebe
- * idNascimento
- * idadeMae
- * dataNascimento
- * sexoBebe
- * estadoMae
- * estadoBebe
- */ 
-
-// Para campos de tamanho fixo
-/* se o campo é inteiro ou de dupla precisão, então armazena-se o valor -1
- * se o campo é do tipo string, então armazena-se ‘\0$$$$$$$$$$$’
- */
-// Para campos de tamanho variavel
-// deve ser armazenado apenas o indicador de tamanho do campo, o qual deve possuir o valor 0.
-
-// Em remover registros, eles serao removidos logicamente
-/* No campo 1 no inicio do registro, "tamanho do campo cidadeMae" caso seja armazenado -1, 
- * o campo deve ser considerado logicamente removido
- */
-
-// Em imprimir lixo e logicamente removidos devem ser tratados para nao aparecer na tela, se for nulo deve ser representado por `-`
-// Caso sucesso
-// "Nasceu em " cidadeBebe "/" estadoBebe ", em " dataNascimento ", um bebe de sexo " sexoBebe "." 
-// Em sexo do bebe deve imprimir: "IGNORADO" caso sexoBebe  = ‘0’,  "MASCULINO"  caso  sexoBebe  = ‘1’e  "FEMININO"  caso sexoBebe  = ‘2’.  
-// Caso registro inexistente
-// "Registro inexistente."
 
 CABECALHO* lerCabecalhoBin(FILE* bin){
     CABECALHO *aux = calloc(1, sizeof(CABECALHO)); 
@@ -98,13 +62,15 @@ int criaBinario(FILE *src, FILE* dest){
     int i = 0, lastID = -1;
     
     if((header = calloc(1, sizeof(CABECALHO))) == NULL) return ERRO;
+ 
+    fseek(src, 0, SEEK_END);     // Ponteiro vai pro final do arquivo csv
 
-    fseek(src, 0, SEEK_END);
-
-    if(ftell(src) == 0){
+    if(ftell(src) == 0){         // Verifica se o arquivo tem 0 byte
         criarCabecalhobin(header, dest);
         return SUCESSO;
     }
+
+    fseek(src, 0, SEEK_SET);     // Volta o ponteiro para o inicio do arquivo
 
     regLido = lerRegistro(src);
 
@@ -294,3 +260,60 @@ int imprimirRegistroBin(FILE *bin){
 
     return SUCESSO;
 }
+
+// Remover registro
+
+/* Qualquer combinação de campopode ser usada como forma de  busca. Os  valores  
+ dos campos  do  tipo string devem  ser  especificados  entre  aspas duplas  (").
+ a  função scan_quote_string eh usada para manipular string ""
+ Os dados devem ser  mostrados no  mesmo formato  definido  para  a  funcionalidade 
+ Registros marcados como logicamente removidos  não devem ser exibidos.*/
+
+// Pesquisa por itens gravados no arquivo
+
+/* O usuario pode fazer qualquer combinacao de campos do registro,
+* receber diversos itens na chamada da funcao, elas sera usadas para criar um "fitro"
+* e retornar todos os itens que correspondem a ele
+*/
+
+
+// Busca por RRN
+
+/*  Percorrer o arquivo ate encontrar o RRN, caso ele exista, imprimir as informacoes deste
+* caso nao exista, retornar erro, caso ja tenha sido deletado, retornar erro
+*/
+
+
+// Remocao logica de registro
+
+/* 
+* Mudar o status para inconsistente
+* Deve-se mudar o valor do primeiro campo para -1 neste caso, TamCidadeMae
+* todos os outros campos continuam sem alteracoes
+* 
+* voltar o status para consistente
+*/
+
+// Iserir elementos adicionais     
+
+/* 
+* Mudar o status do para inconsistente
+* Pode ser inserido em locais onde ja foram removidos registros
+* nao deve ser tratado truncamento
+* 
+* valores nulos na entrada, devem ser identificados como NULL
+* 
+* mudar o status para consistente
+* caso retorne erro imprimir "Falha no processamento do arquivo"
+*/ 
+
+// Atualizar registro
+
+/* 
+* mudar o status para inconsistente
+* O usuario pode atualizar as informacoes de um registro, ele ira fornecer o RRN do
+* item, nao deve tratar os caracteres antigos que estejam no ristro anteriormente
+* 
+* caso o RRN nao exista, o programa deve continuar normalmente apenas retornar para a main
+* mudar o status para consistente
+*/

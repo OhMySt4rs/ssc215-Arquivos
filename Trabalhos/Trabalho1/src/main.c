@@ -62,11 +62,77 @@ int main(void){
                 fclose(bin);
             }
             break;
+
+        // Pesquisa por itens gravados no arquivo
+        case 3:
+            /* O usuario pode fazer qualquer combinacao de campos do registro,
+             * m eh o numero de campos que ele vai procurar
+             * 3 arquivoGerado.bin m NomeDoCampo1valor1[NomeDoCampo2valor2
+             * 
+             * caso nao exista registro com o dado inserido
+             * retornar "Registro inexistente"
+             * 
+             * caso contrario imprimir igual a funcao imprimir registro bin
+             */
+            break;
+
+        // Busca por RRN
+        case 4:
+            /*  caso nao exista registro com o dado inserido
+             * retornar "Registro inexistente"
+             * 
+             * caso contrario imprimir igual a funcao imprimir registro bin
+             */
+            break; 
+
+        // Remocao logica de registro
+        case 5:
+            /* Deve-se mudar o valor do primeiro campo para -1 neste caso, TamCidadeMae
+             * todos os outros campos continuam sem alteracoes
+             * 
+             * ele pode remover n arquivos a cada vez, caso o arquivo ja tenha sido removido
+             * nao deve alterar nada
+             * 
+             * ao fim da operacao deve imprimir o binario na tela
+             * nao esquecer de mudar o status do arquivo a cada iteracao
+             * 
+             */
+
+        // Iserir elementos adicionais     
+        case 6:
+            /* Pode ser inserido em locais onde ja foram removidos registros
+             * nao deve ser tratado truncamento
+             * 
+             * ela pode ser executada n vezes
+             * 
+             * valores nulos na entrada, devem ser identificados como NULL
+             * 
+             * nao esquecer de alterar o status do arquivo durante a manipulacao
+             * ao final, deve se usar a funcao binario na tela
+             * 
+             * caso retorne erro imprimir "Falha no processamento do arquivo"
+             */ 
+            
+            break;
+        
+
+        // Atualizar registro
+        case 7:
+            /* O usuario pode atualizar as informacoes de um registro, ele ira fornecer o RRN do
+             * item, nao deve tratar os caracteres antigos que estejam no ristro anteriormente
+             * 
+             * o usuario pode fazer n atualizacoes
+             * 
+             * caso o RRN nao exista, o programa deve continuar normalmente ate concluir as n 
+             * modificacoes
+             * 
+             * ao final, deve usar a funcao binario na tela
+             * 
+             * nao esquecer de mudar o status do arquivo durante a manipulacao*/
+
+            break;
+
     }
     
-    // antes de finalizar a operacao, mudar o status para `1` 
-
-    
-
     return 0;
 }

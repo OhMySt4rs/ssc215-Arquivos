@@ -1,3 +1,7 @@
+/* Criado por Mateus de Souza Santos 11366913
+    e Wellington Matos Amaral 11315054
+*/
+
 #ifndef H_REGISTRO_
 #define H_REGISTRO_
 
