@@ -18,11 +18,11 @@ typedef struct registro REGISTRO;
 int criaBinario(FILE*, FILE*);                           // Cria um arquivo binário com base no arquivo fonte
 REGISTRO lerRegistro(FILE*);                             // Ler o registro do arquivo .csv 
 
-int inserirRegistroBin(FILE*);                           // Inserir registro no binário
-int imprimirRegistroBin(FILE*);                          // Imprime um registro
+int imprimirRegistroBin(FILE*, int posReg);              // Imprime um registro
 int lerBinario(FILE*);                                   // Imprime todos os registros armazenados no arquivo bin
-int criarCabecalhobin(CABECALHO* header, FILE* dest);    // Adiciona e atualiza o registro de cabecalho em um arquivo binario
+int criarCabecalhobin(CABECALHO* header, FILE* dest, unsigned char);    // Adiciona e atualiza o registro de cabecalho em um arquivo binario
 CABECALHO * lerCabecalhoBin(FILE*);                      // Funcao auxiliar para acesso mais flexivel dos dados do arquivo 
-
+int armazenarRegistrobin(FILE* src,REGISTRO,  FILE* dest);
+int buscaRRN(FILE *, int); //Busca um registro pelo seu RRN e vai imprimi se o encontrar
 
 #endif

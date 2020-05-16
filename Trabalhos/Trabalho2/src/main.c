@@ -8,13 +8,11 @@
 
 int main(void){
 
-    int opc;
+    int opc, RRN;
 
     char arqDataset[10], arqBin[15];
 
     FILE *dataset, *bin;
-
-    CABECALHO *header;
 
     scanf("%d", &opc);
 
@@ -57,6 +55,7 @@ int main(void){
             scanf("%s", arqBin);
 
             if((bin = fopen(arqBin, "r+b")) == NULL) printf("Falha no processamento do arquivo.\n");
+
             else if(lerBinario(bin) == ERRO){
                 printf("Falha no processamento do arquivo.\n");  
             }
@@ -79,11 +78,14 @@ int main(void){
 
         // Busca por RRN
         case 4:
-            /*  caso nao exista registro com o dado inserido
-             * retornar "Registro inexistente"
-             * 
-             * caso contrario imprimir igual a funcao imprimir registro bin
-             */
+            scanf("%s %d",arqBin, &RRN);
+
+            if((bin = fopen(arqBin, "r+b")) == NULL || buscaRRN(bin, RRN) != SUCESSO){
+                printf("Falha no processamento do arquivo.");
+            }
+
+            fclose(bin);
+
             break; 
 
         // Remocao logica de registro
@@ -134,6 +136,6 @@ int main(void){
             break;
 
     }
-    
+
     return 0;
-}
+} 

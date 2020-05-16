@@ -59,7 +59,7 @@ int criaBinario(FILE *src, FILE* dest){
     CABECALHO *header;
     REGISTRO regLido;
     char entradaCabecalhoCSV[140];
-    int i = 0, lastID = -1;
+    int lastID = -1;
     
     if((header = calloc(1, sizeof(CABECALHO))) == NULL) return ERRO;
  
@@ -115,7 +115,7 @@ int armazenarRegistrobin(FILE* src,REGISTRO regLido, FILE* dest){ //Armazena um 
         fwrite(regLido.cidadeMae, sizeof(char), regLido.tam_CidadeMae, dest);
         fwrite(regLido.cidadeBebe, sizeof(char), regLido.tam_CidadeBebe, dest);
         int ate = 105 - 8- regLido.tam_CidadeMae - regLido.tam_CidadeBebe;
-        for (i = 0; i < ate; i++) fwrite(&lixo, sizeof(char), 1, dest);
+        for (int i = 0; i < ate; i++) fwrite(&lixo, sizeof(char), 1, dest);
         fwrite(&regLido.idNascimento, sizeof(int), 1, dest);
         fwrite(&regLido.idadeMae, sizeof(int), 1, dest);
         fwrite(&regLido.dataNascimento, sizeof(char), 10, dest);
@@ -193,7 +193,6 @@ REGISTRO lerRegistro(FILE *csv){
 
 int lerBinario(FILE *bin){
     CABECALHO *header;
-    REGISTRO aux;
     
     int i;
 
@@ -210,9 +209,8 @@ int lerBinario(FILE *bin){
     
     fseek(bin, 128, SEEK_SET);
 
-    for(i = 0; i < header->numeroRegistrosInseridos; i++){
-        fseek(bin, 128 + (128 * i), SEEK_SET);
-        imprimirRegistroBin(bin);
+    for(i = 0; i < header->numeroRegistrosInseridos; i++){   
+        imprimirRegistroBin(bin, i);
     }
     
     free(header);
@@ -220,8 +218,31 @@ int lerBinario(FILE *bin){
     return SUCESSO;
 }
 
-int imprimirRegistroBin(FILE *bin){
+int buscaRRN(FILE * src, int RRN){
+    CABECALHO *header;
+
+    fseek(src, 0, SEEK_SET);
+
+    if((header = lerCabecalhoBin(src)) == NULL || header->status == '0'){
+        free(header);
+        return ERRO;
+    }
+
+    if(header->numeroRegistrosInseridos == 0 || header->numeroRegistrosInseridos < RRN || imprimirRegistroBin(src, RRN) == regDeletado){
+        printf("Registro inexistente.\n");
+    }
+    
+    free(header);
+
+    return SUCESSO;
+
+}
+
+int imprimirRegistroBin(FILE *bin, int posReg){
     REGISTRO aux;
+    
+    fseek(bin, 128 + (128 * posReg), SEEK_SET);
+
     char sexo[10];
 
     fread(&(aux.tam_CidadeMae), sizeof(int), 1, bin);
@@ -230,7 +251,7 @@ int imprimirRegistroBin(FILE *bin){
 
     fread(&(aux.tam_CidadeBebe), sizeof(int), 1, bin);
     
-    aux.cidadeMae = calloc(aux.tam_CidadeMae + 1, sizeof(char));
+    aux.cidadeMae = calloc(aux.tam_CidadeMae + 1, sizeof(char));   
     aux.cidadeBebe = calloc(aux.tam_CidadeBebe + 2, sizeof(char));
 
     fread(aux.cidadeMae, sizeof(char), aux.tam_CidadeMae, bin);
@@ -258,8 +279,10 @@ int imprimirRegistroBin(FILE *bin){
     if(aux.sexoBebe == '1') strcpy(sexo, "MASCULINO"); 
     if(aux.sexoBebe == '2') strcpy(sexo, "FEMININO"); 
 
+
     printf("Nasceu em %s/%s, em %s, um bebê de sexo %s.\n", 
-    aux.cidadeBebe, aux.estadoBebe, aux.dataNascimento, sexo);
+        aux.cidadeBebe, aux.estadoBebe, aux.dataNascimento, sexo);
+
 
     free(aux.cidadeMae);
     free(aux.cidadeBebe);
@@ -268,16 +291,17 @@ int imprimirRegistroBin(FILE *bin){
 }
 
 // Remover registro
-int removerRegistro(FILE *src, int campos){
+/*int removerRegistro(FILE *src, int campos){
     
-/* Qualquer combinação de campo pode ser usada como forma de  busca. Os  valores  
+ Qualquer combinação de campo pode ser usada como forma de  busca. Os  valores  
  dos campos  do  tipo string devem  ser  especificados  entre  aspas duplas  (").
  a  função scan_quote_string eh usada para manipular string ""
  Os dados devem ser  mostrados no  mesmo formato  definido  para  a  funcionalidade 
- Registros marcados como logicamente removidos  não devem ser exibidos.*/
+ Registros marcados como logicamente removidos  não devem ser exibidos.
 
     REGISTRO aux;
-    char entrada[15];
+    char
+     entrada[15];
     char valor[15];
 
     for(int i = 0; i < campos; i++){
@@ -297,7 +321,7 @@ int removerRegistro(FILE *src, int campos){
     }
 
     return SUCESSO;
-}
+} */
 
 // Pesquisa por itens gravados no arquivo
 
