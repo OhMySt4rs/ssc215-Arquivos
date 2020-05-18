@@ -65,15 +65,14 @@ int main(void){
 
         // Pesquisa por itens gravados no arquivo
         case 3:
-            /* O usuario pode fazer qualquer combinacao de campos do registro,
-             * m eh o numero de campos que ele vai procurar
-             * 3 arquivoGerado.bin m NomeDoCampo1valor1[NomeDoCampo2valor2
-             * 
-             * caso nao exista registro com o dado inserido
-             * retornar "Registro inexistente"
-             * 
-             * caso contrario imprimir igual a funcao imprimir registro bin
-             */
+
+            scanf("%s", arqBin);
+
+            if((bin = fopen(arqBin, "r+b")) == NULL || (buscaRegistro(bin) == ERRO)) 
+                printf("Falha no processamento do arquivo.\n");
+
+        
+            
             break;
 
         // Busca por RRN

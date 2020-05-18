@@ -323,6 +323,54 @@ int imprimirRegistroBin(FILE *bin, int posReg){
     return SUCESSO;
 } */
 
+int buscaRegistro(FILE*src){
+    int campos;
+    REGISTRO *aux;
+
+    scanf("%d", &campos);
+
+    aux = definirCriteriosBusca(campos);
+
+    /*printf("id: %d\ncidade bb: %s\nestado: %s \ncidade mae: %s\n estado: %s\ndata nascimento: %s\n idade mae: %d\n sexo bebe: %c",
+    aux->idNascimento, aux->cidadeBebe, aux->estadoBebe, aux->cidadeMae, aux->estadoMae,aux->dataNascimento, aux->idadeMae, aux->sexoBebe); */
+
+    while(fim do arquivo){
+        /* ler um registro, comparar ele com os nosso de criterios e imprimir se bater*/
+        /* caso nenhum bata vai ter uma flag para isso*/
+    }
+
+    return SUCESSO;
+}
+
+REGISTRO* definirCriteriosBusca(int campos){
+    
+    char campo[14];
+    char entrada[100];
+    REGISTRO *aux = calloc(1, sizeof(REGISTRO));
+
+    aux->idNascimento = -1;
+
+    aux->cidadeBebe = calloc(100, sizeof(char));
+    aux->cidadeMae = calloc(100, sizeof(char));
+
+    for(int i = 0; i < campos; i++){
+        scanf("%s", campo);
+        scan_quote_string(entrada);
+
+        if(!strcmp(campo, "idNascimento")) aux->idNascimento = atoi(entrada);
+        if(!strcmp(campo, "idadeMae")) aux->idadeMae = atoi(entrada);
+        if(!strcmp(campo, "dataNascimento")) strcpy(aux->dataNascimento, entrada);
+        if(!strcmp(campo, "sexoBebe")) aux->sexoBebe = entrada[0];
+        if(!strcmp(campo, "estadoMae")) strcpy(aux->estadoMae, entrada);        
+        if(!strcmp(campo, "estadoBebe")) strcpy(aux->estadoBebe, entrada);                    
+        if(!strcmp(campo, "cidadeMae")) strcpy(aux->cidadeMae, entrada);  
+        if(!strcmp(campo, "cidadeBebe")) strcpy(aux->cidadeBebe, entrada);
+    }
+    
+    
+    return aux;
+}
+
 // Pesquisa por itens gravados no arquivo
 
 /* O usuario pode fazer qualquer combinacao de campos do registro,

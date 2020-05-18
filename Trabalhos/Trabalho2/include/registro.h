@@ -24,5 +24,8 @@ int criarCabecalhobin(CABECALHO* header, FILE* dest, unsigned char);    // Adici
 CABECALHO * lerCabecalhoBin(FILE*);                      // Funcao auxiliar para acesso mais flexivel dos dados do arquivo 
 int armazenarRegistrobin(FILE* src,REGISTRO,  FILE* dest);
 int buscaRRN(FILE *, int); //Busca um registro pelo seu RRN e vai imprimi se o encontrar
+int buscaRegistro(FILE*src);                             // Procurar registros com uma combinacao de campos de um registro
+REGISTRO* definirCriteriosBusca(int campos);              // Funcao auxiliar para receber os filtros para pesquisa do usuario
+
 
 #endif
