@@ -143,7 +143,6 @@ int criarCabecalhobin(CABECALHO* header, FILE* dest, unsigned char status){
     return SUCESSO;
 }
 
-
 REGISTRO lerRegistro(FILE *csv){
     REGISTRO reg;
 
@@ -333,8 +332,11 @@ int imprimirRegistro(REGISTRO aux){
 } */
 
 int buscaRegistro(FILE*src){
-    int campos;
-    REGISTRO *aux;
+    int campos, i;
+    REGISTRO *aux, reg;
+    CABECALHO *header;
+
+    header = lerCabecalhoBin(src);
 
     scanf("%d", &campos);
 
@@ -343,9 +345,9 @@ int buscaRegistro(FILE*src){
     /*printf("id: %d\ncidade bb: %s\nestado: %s \ncidade mae: %s\n estado: %s\ndata nascimento: %s\n idade mae: %d\n sexo bebe: %c",
     aux->idNascimento, aux->cidadeBebe, aux->estadoBebe, aux->cidadeMae, aux->estadoMae,aux->dataNascimento, aux->idadeMae, aux->sexoBebe); */
 
-    while(fim do arquivo){
-        /* ler um registro, comparar ele com os nosso de criterios e imprimir se bater*/
-        /* caso nenhum bata vai ter uma flag para isso*/
+    for(i = 0; i < header->numeroRegistrosInseridos; i++){ //Ele vai ler todos registros
+        encontrarRegistroBin(src, i, reg);
+        
     }
 
     return SUCESSO;
