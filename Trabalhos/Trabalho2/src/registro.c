@@ -193,6 +193,7 @@ REGISTRO lerRegistro(FILE *csv){
 
 int lerBinario(FILE *bin){
     CABECALHO *header;
+    REGISTRO reg;
     
     int i;
 
@@ -210,7 +211,8 @@ int lerBinario(FILE *bin){
     fseek(bin, 128, SEEK_SET);
 
     for(i = 0; i < header->numeroRegistrosInseridos; i++){   
-        imprimirRegistroBin(bin, i);
+        encontrarRegistroBin(bin, i, reg);
+        imprimirRegistro(reg);
     }
     
     free(header);
@@ -220,6 +222,7 @@ int lerBinario(FILE *bin){
 
 int buscaRRN(FILE * src, int RRN){
     CABECALHO *header;
+    REGISTRO reg;
 
     fseek(src, 0, SEEK_SET);
 
@@ -228,8 +231,10 @@ int buscaRRN(FILE * src, int RRN){
         return ERRO;
     }
 
-    if(header->numeroRegistrosInseridos == 0 || header->numeroRegistrosInseridos < RRN || imprimirRegistroBin(src, RRN) == regDeletado){
+    if(header->numeroRegistrosInseridos == 0 || header->numeroRegistrosInseridos < RRN || encontrarRegistroBin(src, RRN, reg) == regDeletado){
         printf("Registro inexistente.\n");
+    } else{
+        imprimirRegistro(reg);
     }
     
     free(header);
@@ -238,12 +243,10 @@ int buscaRRN(FILE * src, int RRN){
 
 }
 
-int imprimirRegistroBin(FILE *bin, int posReg){
-    REGISTRO aux;
-    
+int encontrarRegistroBin(FILE *bin, int posReg, REGISTRO aux){
+
     fseek(bin, 128 + (128 * posReg), SEEK_SET);
 
-    char sexo[10];
 
     fread(&(aux.tam_CidadeMae), sizeof(int), 1, bin);
 
@@ -273,15 +276,21 @@ int imprimirRegistroBin(FILE *bin, int posReg){
     fread(&(aux.estadoBebe), sizeof(char), 2, bin);
     aux.estadoBebe[2] = '\0';
     if(strlen(aux.estadoBebe) == 0) strcpy(aux.estadoBebe, "-");
-    
+
+
+    return SUCESSO;
+}
+
+int imprimirRegistro(REGISTRO aux){
+
+    char sexo[10];
 
     if(aux.sexoBebe == '0') strcpy(sexo, "IGNORADO");
     if(aux.sexoBebe == '1') strcpy(sexo, "MASCULINO"); 
     if(aux.sexoBebe == '2') strcpy(sexo, "FEMININO"); 
 
-
     printf("Nasceu em %s/%s, em %s, um bebê de sexo %s.\n", 
-        aux.cidadeBebe, aux.estadoBebe, aux.dataNascimento, sexo);
+    aux.cidadeBebe, aux.estadoBebe, aux.dataNascimento, sexo);
 
 
     free(aux.cidadeMae);
