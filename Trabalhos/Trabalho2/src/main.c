@@ -8,7 +8,7 @@
 
 int main(void){
 
-    int opc, RRN;
+    int opc, RRN, n, i;
 
     char arqDataset[10], arqBin[15];
 
@@ -68,11 +68,9 @@ int main(void){
 
             scanf("%s", arqBin);
 
-            if((bin = fopen(arqBin, "r+b")) == NULL || (buscaRegistro(bin) == ERRO)) 
+            if((bin = fopen(arqBin, "r+b")) == NULL || (buscaCombinadaRegistro(bin) == ERRO)) 
                 printf("Falha no processamento do arquivo.\n");
 
-        
-            
             break;
 
         // Busca por RRN
@@ -89,17 +87,22 @@ int main(void){
 
         // Remocao logica de registro
         case 5:
-            /* Deve-se mudar o valor do primeiro campo para -1 neste caso, TamCidadeMae
-             * todos os outros campos continuam sem alteracoes
-             * 
-             * ele pode remover n arquivos a cada vez, caso o arquivo ja tenha sido removido
-             * nao deve alterar nada
-             * 
-             * ao fim da operacao deve imprimir o binario na tela
-             * nao esquecer de mudar o status do arquivo a cada iteracao
-             * 
-             */
 
+            scanf("%s %d", arqBin, &n);
+
+            if((bin = fopen(arqBin, "r+b")) == NULL){
+                printf("Falha no processamento do arquivo.");
+            } else{
+                // Ele pode remover n arquivos a cada vez
+                for(i = 0; i < n; i++){
+                    removerRegistroBin(bin);
+                }
+
+                fclose(bin);
+
+                binarioNaTela(arqBin);
+            }
+            
         // Iserir elementos adicionais     
         case 6:
             /* Pode ser inserido em locais onde ja foram removidos registros

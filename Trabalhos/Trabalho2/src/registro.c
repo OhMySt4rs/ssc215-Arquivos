@@ -67,6 +67,7 @@ int criaBinario(FILE *src, FILE* dest){
 
     if(ftell(src) == 0){         // Verifica se o arquivo tem 0 byte
         criarCabecalhobin(header, dest, '1');
+        free(header);
         return SUCESSO;
     }
 
@@ -76,7 +77,7 @@ int criaBinario(FILE *src, FILE* dest){
     
     regLido = lerRegistro(src); //Ler o primeiro registro
 
-    while(lastID == regLido.idNascimento){
+    while(lastID != regLido.idNascimento){
         
         //byteoffset do prox registro no binario 
         fseek(dest, (header->RRNproxRegistro * 128) + 128, SEEK_SET);
@@ -91,6 +92,8 @@ int criaBinario(FILE *src, FILE* dest){
         header->numeroRegistrosInseridos++;
         header->RRNproxRegistro ++;       
          
+        lastID = regLido.idNascimento;
+
         //vai pro próximo  registro
         regLido = lerRegistro(src);
  
@@ -102,6 +105,7 @@ int criaBinario(FILE *src, FILE* dest){
 
     //armazenar o header
     criarCabecalhobin(header, dest, '1');
+    free(header);
     
     return SUCESSO;
 }
@@ -137,7 +141,6 @@ int criarCabecalhobin(CABECALHO* header, FILE* dest, unsigned char status){
     fwrite(&header->numeroRegistrosAtualizados, sizeof(int), 1, dest);
     fwrite(&header->numeroRegistrosRemovidos, sizeof(int), 1, dest);
     for(int i = 0; i < 111; i++) fwrite(&lixo, sizeof(char), 1, dest);
-
     free(header); 
     
     return SUCESSO;
@@ -210,8 +213,9 @@ int lerBinario(FILE *bin){
     fseek(bin, 128, SEEK_SET);
 
     for(i = 0; i < header->numeroRegistrosInseridos; i++){   
-        encontrarRegistroBin(bin, i, reg);
+        encontrarRegistroBin(bin, i, &reg);
         imprimirRegistro(reg);
+
     }
     
     free(header);
@@ -219,6 +223,7 @@ int lerBinario(FILE *bin){
     return SUCESSO;
 }
 
+// Busca por RRN
 int buscaRRN(FILE * src, int RRN){
     CABECALHO *header;
     REGISTRO reg;
@@ -230,7 +235,12 @@ int buscaRRN(FILE * src, int RRN){
         return ERRO;
     }
 
-    if(header->numeroRegistrosInseridos == 0 || header->numeroRegistrosInseridos < RRN || encontrarRegistroBin(src, RRN, reg) == regDeletado){
+
+    /*  Percorrer o arquivo ate encontrar o RRN, caso ele exista, imprimir as informacoes deste
+    * caso nao exista, retornar erro, caso ja tenha sido deletado, retornar erro
+    */
+
+    if(header->numeroRegistrosInseridos == 0 || header->numeroRegistrosInseridos < RRN || encontrarRegistroBin(src, RRN, &reg) == regDeletado){
         printf("Registro inexistente.\n");
     } else{
         imprimirRegistro(reg);
@@ -242,39 +252,39 @@ int buscaRRN(FILE * src, int RRN){
 
 }
 
-int encontrarRegistroBin(FILE *bin, int posReg, REGISTRO aux){
+int encontrarRegistroBin(FILE *bin, int posReg, REGISTRO *aux){
 
     fseek(bin, 128 + (128 * posReg), SEEK_SET);
 
 
-    fread(&(aux.tam_CidadeMae), sizeof(int), 1, bin);
+    fread(&(aux->tam_CidadeMae), sizeof(int), 1, bin);
 
-    if(aux.tam_CidadeMae == -1) return regDeletado;
+    if(aux->tam_CidadeMae == -1) return regDeletado;
 
-    fread(&(aux.tam_CidadeBebe), sizeof(int), 1, bin);
+    fread(&(aux->tam_CidadeBebe), sizeof(int), 1, bin);
     
-    aux.cidadeMae = calloc(aux.tam_CidadeMae + 1, sizeof(char));   
-    aux.cidadeBebe = calloc(aux.tam_CidadeBebe + 2, sizeof(char));
+    aux->cidadeMae = calloc(aux->tam_CidadeMae + 1, sizeof(char));   
+    aux->cidadeBebe = calloc(aux->tam_CidadeBebe + 2, sizeof(char));
 
-    fread(aux.cidadeMae, sizeof(char), aux.tam_CidadeMae, bin);
-    aux.cidadeMae[aux.tam_CidadeMae] = '\0';
-    fread(aux.cidadeBebe, sizeof(char), aux.tam_CidadeBebe, bin);
-    aux.cidadeBebe[aux.tam_CidadeBebe] = '\0';
-    if(aux.tam_CidadeBebe == 0) strcpy(aux.cidadeBebe, "-");
+    fread(aux->cidadeMae, sizeof(char), aux->tam_CidadeMae, bin);
+    aux->cidadeMae[aux->tam_CidadeMae] = '\0';
+    fread(aux->cidadeBebe, sizeof(char), aux->tam_CidadeBebe, bin);
+    aux->cidadeBebe[aux->tam_CidadeBebe] = '\0';
+    if(aux->tam_CidadeBebe == 0) strcpy(aux->cidadeBebe, "-");
 
-    fseek(bin, 105 - ( 8 + aux.tam_CidadeMae + aux.tam_CidadeBebe ), SEEK_CUR);
+    fseek(bin, 105 - ( 8 + aux->tam_CidadeMae + aux->tam_CidadeBebe ), SEEK_CUR);
 
-    fread(&(aux.idNascimento), sizeof(int), 1, bin);
-    fread(&(aux.idadeMae), sizeof(int), 1, bin);
-    fread(&(aux.dataNascimento), sizeof(char), 10, bin);
-    aux.dataNascimento[10] = '\0';
-    if(strlen(aux.dataNascimento) == 0) strcpy(aux.dataNascimento, "-");
-    fread(&(aux.sexoBebe), sizeof(char), 1, bin);
-    fread(&(aux.estadoMae), sizeof(char), 2, bin);
-    aux.estadoMae[2] = '\0';
-    fread(&(aux.estadoBebe), sizeof(char), 2, bin);
-    aux.estadoBebe[2] = '\0';
-    if(strlen(aux.estadoBebe) == 0) strcpy(aux.estadoBebe, "-");
+    fread(&(aux->idNascimento), sizeof(int), 1, bin);
+    fread(&(aux->idadeMae), sizeof(int), 1, bin);
+    fread(&(aux->dataNascimento), sizeof(char), 10, bin);
+    aux->dataNascimento[10] = '\0';
+    if(strlen(aux->dataNascimento) == 0) strcpy(aux->dataNascimento, "-");
+    fread(&(aux->sexoBebe), sizeof(char), 1, bin);
+    fread(&(aux->estadoMae), sizeof(char), 2, bin);
+    aux->estadoMae[2] = '\0';
+    fread(&(aux->estadoBebe), sizeof(char), 2, bin);
+    aux->estadoBebe[2] = '\0';
+    if(strlen(aux->estadoBebe) == 0) strcpy(aux->estadoBebe, "-");
 
 
     return SUCESSO;
@@ -296,43 +306,52 @@ int imprimirRegistro(REGISTRO aux){
     free(aux.cidadeBebe);
 
     return SUCESSO;
-}
+}  
 
-// Remover registro
-/*int removerRegistro(FILE *src, int campos){
+int removerRegistroBin(FILE *src){
+    int campos, i;
+    REGISTRO *aux, reg;
+    CABECALHO *header;
+
+    fseek(src, 0, SEEK_SET);
+
+    //mudar para inconsistente
+
+    header = lerCabecalhoBin(src);
+
+    criarCabecalhobin(header, src, '0');
+
+
+    scanf("%d", &campos);
+
+    aux = definirCriteriosBusca(campos);
     
- Qualquer combinação de campo pode ser usada como forma de  busca. Os  valores  
- dos campos  do  tipo string devem  ser  especificados  entre  aspas duplas  (").
- a  função scan_quote_string eh usada para manipular string ""
- Os dados devem ser  mostrados no  mesmo formato  definido  para  a  funcionalidade 
- Registros marcados como logicamente removidos  não devem ser exibidos.
+    for( i = 0; i < header->numeroRegistrosInseridos; i++){ 
+        if(encontrarRegistroBin(src, i, &reg) != regDeletado){
+            // Deve-se mudar o valor do primeiro campo para -1 neste caso, TamCidadeMae, caso exista aquele registro
+            // Todos os outros campos continuam sem alteracoes
+            if(compararRegistro(&reg, aux)) continue;
 
-    REGISTRO aux;
-    char
-     entrada[15];
-    char valor[15];
+            // Muda para -1 no tamCidadeMae (sinal de remocao logica combinado na documentacao)
+            reg.tam_CidadeMae = -1;
+            
+            header->numeroRegistrosRemovidos ++;
 
-    for(int i = 0; i < campos; i++){
-        scanf("%s", entrada);
-        scanf("%s", valor);
+            fseek(src, 128 + (128*i), SEEK_SET);
 
-        scan_quote_string(valor);                   // Remove as aspas do valor
-
-        if(!strcmp(entrada, "idNascimento")) strcpy(aux.idNascimento, valor);
-        if(!strcmp(entrada, "idadeMae")) aux.idadeMae = atoi(valor);
-        if(!strcmp(entrada, "dataNascimento")) strcpy(aux.dataNascimento, valor);
-        if(!strcmp(entrada, "sexoBebe")) aux.sexoBebe = valor;
-        if(!strcmp(entrada, "estadoMae")) strcpy(aux.estadoMae, valor);
-        if(!strcmp(entrada, "estadoBebe")) strcpy(aux.estadoBebe, valor);
-        if(!strcmp(entrada, "cidadeMae")) strcpy(aux.cidadeMae, valor);
-        if(!strcmp(entrada, "cidadeBebe")) strcpy(aux.cidadeBebe, valor);
+            fwrite(&reg.tam_CidadeMae, sizeof(int), 1, src);
+        }
+        // Caso o arquivo ja tenha sido removido, nao deve fazer nada
     }
 
-    return SUCESSO;
-} */
+    criarCabecalhobin(header, src, '1');
 
-int buscaRegistro(FILE*src){
-    int campos, i;
+    //voltar para consistente
+    return SUCESSO;
+} 
+
+int buscaCombinadaRegistro(FILE* src){
+    int campos, i, flag = 0;
     REGISTRO *aux, reg;
     CABECALHO *header;
 
@@ -346,13 +365,30 @@ int buscaRegistro(FILE*src){
     aux->idNascimento, aux->cidadeBebe, aux->estadoBebe, aux->cidadeMae, aux->estadoMae,aux->dataNascimento, aux->idadeMae, aux->sexoBebe); */
 
     for(i = 0; i < header->numeroRegistrosInseridos; i++){ //Ele vai ler todos registros
-        encontrarRegistroBin(src, i, reg);
-        
+        encontrarRegistroBin(src, i, &reg);
+        if(compararRegistro(&reg, aux)){
+            free(reg.cidadeMae);
+            free(reg.cidadeBebe);
+            continue;
+        }
+
+        flag++;
+        imprimirRegistro(reg);
+        free(reg.cidadeMae);
+        free(reg.cidadeBebe);
     }
+
+    free(header);
+    free(aux->cidadeMae);
+    free(aux->cidadeBebe);
+    free(aux);
+
+    if(!flag) printf("Registro inexistente.\n");
 
     return SUCESSO;
 }
 
+// Pesquisa por itens gravados no arquivo
 REGISTRO* definirCriteriosBusca(int campos){
     
     char campo[14];
@@ -368,6 +404,10 @@ REGISTRO* definirCriteriosBusca(int campos){
         scanf("%s", campo);
         scan_quote_string(entrada);
 
+        /* O usuario pode fazer qualquer combinacao de campos do registro,
+        * receber diversos itens na chamada da funcao, elas sera usadas para criar um "fitro"
+        * e retornar todos os itens que correspondem a ele
+        */
         if(!strcmp(campo, "idNascimento")) aux->idNascimento = atoi(entrada);
         if(!strcmp(campo, "idadeMae")) aux->idadeMae = atoi(entrada);
         if(!strcmp(campo, "dataNascimento")) strcpy(aux->dataNascimento, entrada);
@@ -382,30 +422,21 @@ REGISTRO* definirCriteriosBusca(int campos){
     return aux;
 }
 
-// Pesquisa por itens gravados no arquivo
+int compararRegistro(REGISTRO *src, REGISTRO *aux){
 
-/* O usuario pode fazer qualquer combinacao de campos do registro,
-* receber diversos itens na chamada da funcao, elas sera usadas para criar um "fitro"
-* e retornar todos os itens que correspondem a ele
-*/
+    if(((aux->idNascimento) != -1)){ if(aux->idNascimento != src->idNascimento) return ERRO;}
+    if((aux->idadeMae) && aux->idadeMae != src->idNascimento) return ERRO;
+    if((aux->dataNascimento) && strcmp(aux->dataNascimento, src->dataNascimento)) return ERRO;
+    if((aux->sexoBebe) && aux->sexoBebe != src->sexoBebe) return ERRO;
+    if((aux->estadoMae) && strcmp(aux->estadoMae, src->estadoMae)) return ERRO;
+    if((aux->estadoBebe) && strcmp(aux->estadoBebe, src->estadoBebe)) return ERRO;      
+    if((aux->cidadeMae) && strcmp(aux->cidadeMae, src->cidadeMae)) return ERRO;                  
+    if((aux->cidadeBebe) && strcmp(aux->cidadeBebe, src->cidadeBebe)) return ERRO;
 
+    return SUCESSO;
 
-// Busca por RRN
+}
 
-/*  Percorrer o arquivo ate encontrar o RRN, caso ele exista, imprimir as informacoes deste
-* caso nao exista, retornar erro, caso ja tenha sido deletado, retornar erro
-*/
-
-
-// Remocao logica de registro
-
-/* 
-* Mudar o status para inconsistente
-* Deve-se mudar o valor do primeiro campo para -1 neste caso, TamCidadeMae
-* todos os outros campos continuam sem alteracoes
-* 
-* voltar o status para consistente
-*/
 
 // Iserir elementos adicionais     
 
