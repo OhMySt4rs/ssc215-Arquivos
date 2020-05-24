@@ -141,7 +141,6 @@ int criarCabecalhobin(CABECALHO* header, FILE* dest, unsigned char status){
     fwrite(&header->numeroRegistrosAtualizados, sizeof(int), 1, dest);
     fwrite(&header->numeroRegistrosRemovidos, sizeof(int), 1, dest);
     for(int i = 0; i < 111; i++) fwrite(&lixo, sizeof(char), 1, dest);
-    free(header); 
     
     return SUCESSO;
 }
@@ -321,18 +320,22 @@ int removerRegistroBin(FILE *src){
 
     criarCabecalhobin(header, src, '0');
 
-
     scanf("%d", &campos);
 
     aux = definirCriteriosBusca(campos);
     
     for( i = 0; i < header->numeroRegistrosInseridos; i++){ 
+        // Caso o arquivo ja tenha sido removido, nao deve fazer nada
         if(encontrarRegistroBin(src, i, &reg) != regDeletado){
             // Deve-se mudar o valor do primeiro campo para -1 neste caso, TamCidadeMae, caso exista aquele registro
             // Todos os outros campos continuam sem alteracoes
-            if(compararRegistro(&reg, aux)) continue;
+            if(compararRegistro(&reg, aux)){
+                free(reg.cidadeMae);
+                free(reg.cidadeBebe);  
+                continue;
+            }
 
-            // Muda para -1 no tamCidadeMae (sinal de remocao logica combinado na documentacao)
+            // Muda para -1 no tamCidadeMae (sinal de remocao logica, combinado na documentacao)
             reg.tam_CidadeMae = -1;
             
             header->numeroRegistrosRemovidos ++;
@@ -341,11 +344,15 @@ int removerRegistroBin(FILE *src){
 
             fwrite(&reg.tam_CidadeMae, sizeof(int), 1, src);
         }
-        // Caso o arquivo ja tenha sido removido, nao deve fazer nada
     }
 
     criarCabecalhobin(header, src, '1');
 
+    free(aux->cidadeMae);
+    free(aux->cidadeBebe);
+    free(aux);
+
+    free(header);
     //voltar para consistente
     return SUCESSO;
 } 
@@ -361,8 +368,8 @@ int buscaCombinadaRegistro(FILE* src){
 
     aux = definirCriteriosBusca(campos);
 
-    /*printf("id: %d\ncidade bb: %s\nestado: %s \ncidade mae: %s\n estado: %s\ndata nascimento: %s\n idade mae: %d\n sexo bebe: %c",
-    aux->idNascimento, aux->cidadeBebe, aux->estadoBebe, aux->cidadeMae, aux->estadoMae,aux->dataNascimento, aux->idadeMae, aux->sexoBebe); */
+    /*printf("id: %d\ncidade bb: %s\nestado: %s \ncidade mae: %s\n estado: %s\ndata nascimento: %s\n idade mae: %d\n sexo bebe: %c\n",
+    aux->idNascimento, aux->cidadeBebe, aux->estadoBebe, aux->cidadeMae, aux->estadoMae,aux->dataNascimento, aux->idadeMae, aux->sexoBebe);*/
 
     for(i = 0; i < header->numeroRegistrosInseridos; i++){ //Ele vai ler todos registros
         encontrarRegistroBin(src, i, &reg);
@@ -374,8 +381,6 @@ int buscaCombinadaRegistro(FILE* src){
 
         flag++;
         imprimirRegistro(reg);
-        free(reg.cidadeMae);
-        free(reg.cidadeBebe);
     }
 
     free(header);
@@ -425,13 +430,13 @@ REGISTRO* definirCriteriosBusca(int campos){
 int compararRegistro(REGISTRO *src, REGISTRO *aux){
 
     if(((aux->idNascimento) != -1)){ if(aux->idNascimento != src->idNascimento) return ERRO;}
-    if((aux->idadeMae) && aux->idadeMae != src->idNascimento) return ERRO;
-    if((aux->dataNascimento) && strcmp(aux->dataNascimento, src->dataNascimento)) return ERRO;
+    if((aux->idadeMae) && (aux->idadeMae != src->idadeMae)) return ERRO;
+    if((strlen(aux->dataNascimento)) && (strcmp(aux->dataNascimento, src->dataNascimento))) return ERRO;
     if((aux->sexoBebe) && aux->sexoBebe != src->sexoBebe) return ERRO;
-    if((aux->estadoMae) && strcmp(aux->estadoMae, src->estadoMae)) return ERRO;
-    if((aux->estadoBebe) && strcmp(aux->estadoBebe, src->estadoBebe)) return ERRO;      
-    if((aux->cidadeMae) && strcmp(aux->cidadeMae, src->cidadeMae)) return ERRO;                  
-    if((aux->cidadeBebe) && strcmp(aux->cidadeBebe, src->cidadeBebe)) return ERRO;
+    if(strlen(aux->estadoMae) && (strcmp(aux->estadoMae, src->estadoMae))) return ERRO;
+    if(strlen(aux->estadoBebe) && (strcmp(aux->estadoBebe, src->estadoBebe))) return ERRO;      
+    if(strlen(aux->cidadeMae) && (strcmp(aux->cidadeMae, src->cidadeMae))) return ERRO;                  
+    if(strlen(aux->cidadeBebe) && (strcmp(aux->cidadeBebe, src->cidadeBebe))) return ERRO;
 
     return SUCESSO;
 
