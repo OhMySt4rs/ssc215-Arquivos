@@ -30,12 +30,12 @@ int main(void){
             scanf("%s %s", arqDataset, arqBin);
 
             if((dataset = fopen(arqDataset, "r")) == NULL){
-                printf("Erro na abertura do arquivo csv");
+                printf("Falha no processamento do arquivo.\n");
                 return 0;
             }
 
             if((bin = fopen(arqBin, "w+b")) == NULL){
-                printf("Erro na abertura do arquivo bin");
+                printf("Falha no processamento do arquivo.\n");
                 return 0;
             }
 
@@ -95,7 +95,10 @@ int main(void){
             } else{
                 // Ele pode remover n arquivos a cada vez
                 for(i = 0; i < n; i++){
-                    removerRegistroBin(bin);
+                    if(removerRegistroBin(bin)){
+                        printf("Falha no processamento do arquivo.");
+                        return 0;
+                    }
                 }
 
                 fclose(bin);
@@ -123,18 +126,25 @@ int main(void){
 
         // Atualizar registro
         case 7:
-            /* O usuario pode atualizar as informacoes de um registro, ele ira fornecer o RRN do
-             * item, nao deve tratar os caracteres antigos que estejam no ristro anteriormente
-             * 
-             * o usuario pode fazer n atualizacoes
-             * 
-             * caso o RRN nao exista, o programa deve continuar normalmente ate concluir as n 
-             * modificacoes
-             * 
-             * ao final, deve usar a funcao binario na tela
-             * 
-             * nao esquecer de mudar o status do arquivo durante a manipulacao*/
+            
+            scanf("%s %d", arqBin, &n);
 
+            if((bin = fopen(arqBin, "r+b")) == NULL){
+                printf("Falha no processamento do arquivo.");
+            } else{
+                // Ele pode remover n arquivos a cada vez
+                for(i = 0; i < n; i++){
+                    scanf("%d", &RRN);
+                    if(atualizarRegistroBin(bin, RRN)){
+                        printf("Falha no processamento do arquivo.");
+                        return 0;
+                    }
+                }
+
+                fclose(bin);
+
+                binarioNaTela(arqBin);
+            }
             break;
 
     }
