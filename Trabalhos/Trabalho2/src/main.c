@@ -108,18 +108,23 @@ int main(void){
             
         // Iserir elementos adicionais     
         case 6:
-            /* Pode ser inserido em locais onde ja foram removidos registros
-             * nao deve ser tratado truncamento
-             * 
-             * ela pode ser executada n vezes
-             * 
-             * valores nulos na entrada, devem ser identificados como NULL
-             * 
-             * nao esquecer de alterar o status do arquivo durante a manipulacao
-             * ao final, deve se usar a funcao binario na tela
-             * 
-             * caso retorne erro imprimir "Falha no processamento do arquivo"
-             */ 
+            scanf("%s %d", arqBin, &n);
+
+            if((bin = fopen(arqBin, "r+b")) == NULL){
+                printf("Falha no processamento do arquivo.");
+            } else{
+                // Ele pode remover n arquivos a cada vez
+                for(i = 0; i < n; i++){
+                    if(inserirRegistro(bin)){
+                        printf("Falha no processamento do arquivo.");
+                        return 0;
+                    }
+                }
+
+                fclose(bin);
+
+                binarioNaTela(arqBin);
+            }
             
             break;
         

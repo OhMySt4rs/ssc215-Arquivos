@@ -22,7 +22,7 @@ int imprimirRegistroBin(FILE*, int posReg);                             // Impri
 int lerBinario(FILE*);                                                  // Imprime todos os registros armazenados no arquivo bin
 int criarCabecalhobin(CABECALHO* header, FILE* dest, unsigned char);    // Adiciona e atualiza o registro de cabecalho em um arquivo binario
 CABECALHO * lerCabecalhoBin(FILE*);                                     // Funcao auxiliar para acesso mais flexivel dos dados do arquivo 
-int armazenarRegistrobin(REGISTRO,  FILE* dest);                        // Escreve um registro no arquivo dest
+int armazenarRegistrobin(REGISTRO,  FILE* dest, int );                        // Escreve um registro no arquivo dest
 int buscaRRN(FILE *, int);                                              // Procurar registros com uma combinacao de campos de um registro
 REGISTRO* definirCriteriosBusca(int campos);                            // Funcao auxiliar para receber os filtros para pesquisa do usuario
 int encontrarRegistroBin(FILE *bin, int posReg, REGISTRO *aux);         // Funcao auxiliar para percorrer o arquivo e encontrar um registro, ultilizando campos
@@ -31,5 +31,6 @@ int buscaCombinadaRegistro(FILE* src);
 int compararRegistro(REGISTRO *src, REGISTRO *aux);
 int removerRegistroBin(FILE *src);
 int atualizarRegistroBin(FILE* src, int RRN);
+int inserirRegistro(FILE* bin);
 
 #endif
