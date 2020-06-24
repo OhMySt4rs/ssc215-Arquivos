@@ -133,7 +133,7 @@ int armazenarRegistrobin(REGISTRO regLido, FILE* dest, int dif){
     fwrite(&regLido.estadoMae, sizeof(char), 2, dest);
     fwrite(&regLido.estadoBebe, sizeof(char), 2, dest);
 
-        return SUCESSO;
+    return SUCESSO;
 }
 
 int criarCabecalhobin(CABECALHO* header, FILE* dest, unsigned char status){
