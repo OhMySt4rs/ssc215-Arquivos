@@ -12,6 +12,37 @@
 #define regDeletado 2
 
 
+struct registroCabecalho{
+    unsigned char status;           // Sempre que uma modificacao inicia assume `0`, se concluir com sucesso assume `1`
+    int RRNproxRegistro;            // Byteoffset do proximo registro
+    int numeroRegistrosInseridos;   // Inicialmente vale 0 e incrementa sempre que existir um novo registro
+    int numeroRegistrosRemovidos;   // Os registros ser'ao logicamente removidos, incrementam sempre que isso ocorrer
+    int numeroRegistrosAtualizados; // Sempre que alguma informacao em um registro for atualizada, ele sera incrmentado
+    char lixo[111];                 // Armazena apenas `$` para manter o padrao de tamanho de 128 bites
+};
+
+/* Organizacao hibrida de registros, haverao campos de tamanho fixo, campo de tamanho variavel 
+ * (indicando o tamanho do campo) e delimitador entre registros `#`
+ */
+
+struct registro{
+
+    // Campos de tamanho fixo: tamanho maximo de 23 bytes
+    int idNascimento;               // código sequencial que identifica univocamente cada registro do arquivo de dados)
+    int idadeMae;                   // idade da mãe do bebê
+    char dataNascimento[11];        // formato AAAA-MM-DD; data de nascimento do bebê
+    char sexoBebe;                  // sexo  do  bebê pode assumir os valores ‘0’(ignorado), ‘1’(masculino) e ‘2’(feminino)
+    char estadoMae[3];              // sigla  do  estado  da cidade de residência da mãe
+    char estadoBebe[3];             // sigla  do  estado  da cidade na qual o bebê nasceu
+    int tam_CidadeMae;              // tamanho do campo cidadeMae
+    int tam_CidadeBebe;             // tamanho do campo cidadeBebe
+
+    // Campos  de  tamanho  variável: tamanho  máximo  de 105 bytes incluindo  os espaços reservados para os indicadores de tamanho
+    char* cidadeMae;                // cidade de residência da mãe
+    char* cidadeBebe;               // cidade na qual o bebê nasceu
+};
+
+
 typedef struct registroCabecalho CABECALHO;
 typedef struct registro REGISTRO;
 

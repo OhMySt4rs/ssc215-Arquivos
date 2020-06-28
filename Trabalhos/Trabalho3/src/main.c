@@ -5,14 +5,15 @@
 #include <stdlib.h>
 #include <binarionatela.h>
 #include <registro.h> 
+#include <arvoreB.h>
 
 int main(void){
 
     int opc, RRN, n, i;
 
-    char arqDataset[10], arqBin[15];
+    char arqDataset[10], arqBin[15], arqIndice[30];
 
-    FILE *dataset, *bin;
+    FILE *dataset, *bin, *indice;
 
     scanf("%d", &opc);
 
@@ -179,7 +180,36 @@ int main(void){
                 binarioNaTela(arqBin);
             }
             break;
+        
+        case 8:
 
+            // Leitura e abertura dos arquivos de dados e de indice
+            scanf(" %s %s", arqBin, arqIndice);
+
+            if((bin = fopen(arqBin, "r + b")) == NULL || (indice = fopen(arqIndice, "w + b")) == NULL){
+                printf("Falha no processamento do arquivo.\n");
+            }
+            else{
+                criarIndiceArvoreB(bin, indice);
+                
+            }
+
+            // Fechar os arquivos
+            fclose(bin);
+            fclose(indice);
+            
+            binarioNaTela(arqIndice);
+            
+            break;
+
+        /*case 9:
+            
+            break;
+
+        case 10:
+
+            break;
+*/
     }
 
     return 0;
