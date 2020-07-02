@@ -10,8 +10,7 @@
 #define SUCESSO 0
 #define ERRO 1
 #define regDeletado 2
-
-
+ 
 struct registroCabecalho{
     unsigned char status;           // Sempre que uma modificacao inicia assume `0`, se concluir com sucesso assume `1`
     int RRNproxRegistro;            // Byteoffset do proximo registro

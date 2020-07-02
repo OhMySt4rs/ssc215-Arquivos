@@ -191,7 +191,6 @@ int main(void){
             }
             else{
                 criarIndiceArvoreB(bin, indice);
-                
             }
 
             // Fechar os arquivos

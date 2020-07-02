@@ -5,8 +5,10 @@
 #include <string.h>
 #include <binarionatela.h>
 
-#define NULO -1
-#difine M 6
+#define VAZIO -1
+#define PROMOVE 3
+#define NAOPROMOVE 4
+#define M 6
 
 struct _arvoreB{
     unsigned char status;       // Teste para saber se o arquivo esta consistente
@@ -17,7 +19,7 @@ struct _arvoreB{
     char lixo[55];
 };
 
-struct _folhaB{
+struct _noB{
     int nivel;      // O nivel dos nos eh feito de baixo para cima, ou seja, a raiz possui o maior nivel e a folha o menor (1)
     int n;          // Numero de chaves presente no node (m = 6, entao n varia de (m/2)-1 = 2 a m -1 = 5)
     int C[M-1];     // Chave de busca
@@ -33,18 +35,145 @@ ARVOREB* criarCabecalhoArvoreB(){
     
     aux = calloc(1, sizeof(ARVOREB));
 
-    aux->noRaiz = NULO;
+    aux->noRaiz = VAZIO;
 
     for(i = 0; i < 55; i++){
-        lixo[i] = '$';
+        aux->lixo[i] = '$';
     }
 
     return aux;
 }
 
-// Recebe um REGISTRO e o insere no arquivo de indice fazendo os balenceamentos necessarios
-void inserirChave(){
+int buscarIndice(FILE* indexBtree, int chave){
+    PAGINA aux;
+    int i;
 
+    for(i = 0; i < M - 1; i++){
+        if(chave > aux.C[i]) return i;
+        else if(chave == aux.C[i]) return jaExiste;
+    }
+
+    return i;
+}
+
+int criarPagina(PAGINA* no){
+    PAGINA *no = calloc(1, sizeof(PAGINA));
+    int i;
+
+    for(i = 0; i < M - 1; i++){
+        no->P[i] = VAZIO;
+        no->Pr[i] = VAZIO;
+        no->C[i] = VAZIO;
+    }
+    no->P[M-1] = VAZIO;
+
+    return SUCESSO;
+}
+int lerCabecalhoArvoreB();
+int salvarCabecalhoArvoreB();
+int lerPagina(int RRN, FILE *index, PAGINA *no){
+    int i;
+    
+    fseek(index, 72 + (72*RRN), SEEK_SET);
+    fread(&(no->nivel), sizeof(int), 1, index);
+    fread(&(no->n), sizeof(int), 1, index);
+    for(i = 0; i < M-1; i++){
+        fread(&(no->C[i]), sizeof(int), 1, index);
+        fread(&(no->Pr[i]), sizeof(int), 1, index);
+    }
+    for(i = 0; i < M; i++) fread(&(no->P[i]), sizeof(int), 1, index);
+
+    return SUCESSO;
+}
+
+int salvarPagina(int RRN, FILE *index, PAGINA *no){
+    int i;
+    
+    fseek(index, 72 + (72*RRN), SEEK_SET);
+    fwrite(&(no->nivel), sizeof(int), 1, index);
+    fwrite(&(no->n), sizeof(int), 1, index);
+    
+    for(i = 0; i < M-1; i++){
+        fwrite(&(no->C[i]), sizeof(int), 1, index);
+        fwrite(&(no->Pr[i]), sizeof(int), 1, index);
+    }
+    
+    for(i = 0; i < M; i++) fwrite(&(no->P[i]), sizeof(int), 1, index);
+
+    return SUCESSO;
+}
+
+int inserir(int RRNatual,int chave,int Pr,int chavePromovida,int PrPromovida,int filhoDPromovido){
+    PAGINA *page;
+    if(RRNatual == VAZIO){
+        chavePromovida = chave;
+        PrPromovida = Pr;
+        filhoDPromovido = VAZIO;
+        return PROMOVE;
+    } else{
+        criarPagina(page);
+        lerPagina(RRNatual, index, page);
+        buscaInterna();
+        /*
+        4 5 -1 -1 -1
+        3 2 1
+        2 
+        */
+    }
+}
+
+// Recebe um REGISTRO e o insere no arquivo de indice fazendo os balenceamentos necessarios
+int inserirChave(ARVOREB *bTree, REGISTRO atual, int Pr, FILE *index){
+    PAGINA *no;
+    int chave = atual.idNascimento, raiz, chavePromovida, PrPromovida, filhoDPromovido;
+    
+    // nao ha nenhum regitro na arvore
+    if(bTree->noRaiz == VAZIO){
+        criarPagina(no);
+
+        // a primeira pagina sera adicionada, entao cria-se o primeiro nivel da arvore
+        bTree->nroNiveis++;
+        // o no raiz recebe RRN 0
+        bTree->noRaiz = bTree->proxRRN;
+        // o proximo RRN eh o 1
+        bTree->proxRRN = 1;
+
+        // atualizar as informacoes do no que esta sendo inserido na arvore
+        no->C[0] = atual.idNascimento;
+        no->Pr[0] = Pr;
+        no->n ++;
+        no->nivel = 1;
+
+        bTree->nroChaves++;
+
+        salvarPagina(bTree->noRaiz, index, no);
+
+        return SUCESSO;
+    } else{
+        raiz = bTree->noRaiz;
+        if(inserir(raiz, chave, Pr, chavePromovida, PrPromovida, filhoDPromovido) == PROMOVE){
+            criarPagina(no);
+            no->C[0] = chavePromovida;
+            no->Pr[0] = PrPromovida;
+            no->P[0] = raiz;
+            no->P[1] = filhoDPromovido;
+            raiz = bTree->proxRRN;
+            bTree->noRaiz = raiz;
+            salvarPagina(raiz, index, no);
+        }
+    }
+    /*busca no arquivo de indice (segundo a ordenacao comparando com a chave registroNascimento)
+        o no que deveria receber o registro
+        se ja existe no index retorna erro
+        senao */
+
+    /*verficar quantas chaves tem no registro atual
+        se menor que 5 insere no no atual
+            Chave=idNascimento, Pr= RRN do registro;
+            dentro no node atual, verificar ordenacao (crescente)
+        senao verifica balanceamento ... ... ...
+        
+        retorna sucesso*/
 }
 
 // Recebe um arquivo (seguindo as especificacoes do trab 1) preenche o arquivo com as informacoes existentes no arquivo
@@ -52,6 +181,7 @@ void inserirChave(){
 int criarIndiceArvoreB(FILE* dataset, FILE* indexBtree){
     CABECALHO *header;
     ARVOREB *bTree;
+    REGISTRO aux;
 
     header = lerCabecalhoBin(dataset);
 
@@ -62,15 +192,13 @@ int criarIndiceArvoreB(FILE* dataset, FILE* indexBtree){
 
     bTree = criarCabecalhoArvoreB();
 
-    /*
     for(i = 0; i < header->numeroRegistrosInseridos + header->numeroRegistrosRemovidos ; i++){
-        if(encontrarRegistroBin() != regDeletado){
-            ler registro do dataset -> inserir na arvoreB
+        if(encontrarRegistroBin(dataset, i, &aux) != regDeletado){
+            inserirChave(bTree, aux, i, indexBtree);
         }
-        else continue;
     }
-    Chave=idNascimento, Pr= RRN do registro;
-    
+
+    return SUCESSO;
 }
 
 /*
