@@ -38,16 +38,21 @@ void swap(int *a, int *b){
     return;
 }
 
-void bubblesort(int vet[], int *ref, int tam){
+void bubblesort(int vet[], int *ref,int sub[], int tam){
     if(tam < 1) return;
 
     for(int i = 0; i < tam; i++){
-        if(vet[i] < vet[i+1])
-            swap(vet[i], vet[i+1]);
-            swap(ref[i], ref[i+1]);
+        if(vet[i] < vet[i+1]){
+            swap(&(vet[i]), &(vet[i+1]));
+            swap(&(ref[i]), &(ref[i+1]));
+            swap(&(sub[i+1]), &(sub[i+2]));
+
+            
+         
+        }
     }
 
-    bubblesort(vet, ref, tam-1);
+    bubblesort(vet, ref, sub, tam-1);
 }
 
 ARVOREB* criarCabecalhoArvoreB(){
@@ -65,20 +70,8 @@ ARVOREB* criarCabecalhoArvoreB(){
     return aux;
 }
 
-int buscarIndice(FILE* indexBtree, int chave){
-    PAGINA aux;
-    int i;
-
-    for(i = 0; i < M - 1; i++){
-        if(chave > aux.C[i]) return i;
-        else if(chave == aux.C[i]) return jaExiste;
-    }
-
-    return i;
-}
-
 int criarPagina(PAGINA* no){
-    PAGINA *no = calloc(1, sizeof(PAGINA));
+    no = calloc(1, sizeof(PAGINA));
     int i;
 
     for(i = 0; i < M - 1; i++){
@@ -91,7 +84,20 @@ int criarPagina(PAGINA* no){
     return SUCESSO;
 }
 int lerCabecalhoArvoreB();
-int salvarCabecalhoArvoreB();
+int salvarCabecalhoArvoreB(FILE *index, ARVOREB *bTree){
+    fseek(index, 0, SEEK_SET);
+    bTree-> status = '1';
+    fwrite(&(bTree->status), sizeof(unsigned char), 1, index);
+    fwrite(&(bTree->noRaiz), sizeof(int), 1, index);
+    fwrite(&(bTree->nroNiveis), sizeof(int), 1, index);
+    fwrite(&(bTree->proxRRN), sizeof(int), 1, index);
+    fwrite(&(bTree->nroChaves), sizeof(int), 1, index);
+    for(int i = 0; i < 55; i++){
+        bTree->lixo[i] = '$';
+    }
+    fwrite(&(bTree->lixo), sizeof(char), 55, index);
+}
+
 int lerPagina(int RRN, FILE *index, PAGINA *no){
     int i;
     
@@ -132,38 +138,46 @@ int buscaInterna(int *v, int tam, int chave){
     return i;
 }
 
-int split(int novaChave, int novaPr, int RRNInserido, PAGINA* page, int chavePromovida, 
-          int PrPromovida, int filhoDPromovido, PAGINA* newpage, int RRN_newpage){
+int split(int novaChave, int novaPr, int filhoDnova, PAGINA* page, int *chavePromovida, 
+          int *PrPromovida, int *filhoDPromovido, PAGINA* newpage, int RRN_newpage){
     int chaves[M], refs[M], childs[M+1];
-    int i;
+    int i, j;
 
     for(i = 0; i < M -1; i ++){
         chaves[i] = page->C[i];
         refs[i] = page->Pr[i];
         childs[i] = page->P[i];
     }
+
     childs[i] = page->P[i];
-    childs[i] = RRNInserido;
+    childs[i+1] = filhoDnova;
     chaves[i] = novaChave;
     refs[i] = novaPr;
 
-    bubblesort(chaves, refs, M);
+    bubblesort(chaves, refs, childs, M);
 
-    chavePromovida = chaves[M/2];
-    PrPromovida = refs[M/2];
-
-    filhoDPromovido =  RRN_newpage;
-
+    *chavePromovida = chaves[M/2];
+    *PrPromovida = refs[M/2];
+    *filhoDPromovido =  RRN_newpage;
 
     for(i = 0; i < M/2; i++){
         page->C[i] = chaves[i];
         page->Pr[i] = refs[i];
-        page->P[i] = page->P[i];
+        page->P[i] = childs[i];
     }
+    
+    for(i = (M/2)+1, j= 0; i < M; j++, i++){
+        newpage->C[j] = chaves[i];
+        newpage->Pr[j] = refs[i];
+        newpage->P[j] = childs[i];
+    }
+    newpage->P[j] = childs[i];
+    
+    return SUCESSO;
 }
 
 int inserir(FILE *index, ARVOREB *Btree, int RRNatual,int chave,
-            int Pr,int chavePromovida,int PrPromovida,int filhoDPromovido){
+            int Pr,int *chavePromovida,int *PrPromovida,int *filhoDPromovido){
     PAGINA *page, *newpage;
     int POS, retorno, chavePromovidaInf, PrPromovidaInf, filhoDPromovidoInf;
     
@@ -182,7 +196,7 @@ int inserir(FILE *index, ARVOREB *Btree, int RRNatual,int chave,
 
         if(POS ==  ENCONTROU) return ERRO;
 
-        retorno = inserir(index, Btree, page->P[POS], chave, Pr, chavePromovidaInf, PrPromovidaInf, filhoDPromovidoInf);                    
+        retorno = inserir(index, Btree, page->P[POS], chave, Pr, &chavePromovidaInf, &PrPromovidaInf, &filhoDPromovidoInf);                    
         
         if(retorno == ERRO || retorno == NAOPROMOVE) return retorno;
         
@@ -190,7 +204,7 @@ int inserir(FILE *index, ARVOREB *Btree, int RRNatual,int chave,
             page->C[page->n] = chavePromovidaInf;
             page->Pr[page->n] = PrPromovidaInf;
             page->n++;
-            bubblesort(page->C, page->Pr, page->n);  
+            bubblesort(page->C, page->Pr, page->P, page->n);  
             salvarPagina(RRNatual, index, page); 
             Btree->nroChaves++;       
             
@@ -203,7 +217,6 @@ int inserir(FILE *index, ARVOREB *Btree, int RRNatual,int chave,
             salvarPagina(RRNatual, index, page);
             salvarPagina(Btree->proxRRN, index, newpage);
             Btree->proxRRN++;
-            
             return PROMOVE;
         }
     }
@@ -258,9 +271,9 @@ int inserirChave(ARVOREB *bTree, REGISTRO atual, int Pr, FILE *index){
         se menor que 5 insere no no atual
             Chave=idNascimento, Pr= RRN do registro;
             dentro no node atual, verificar ordenacao (crescente)
-        senao verifica balanceamento ... ... ...
+        senao verifica balanceamento ... ... ...*/
         
-        retorna sucesso*/
+        return SUCESSO;
 }
 
 // Recebe um arquivo (seguindo as especificacoes do trab 1) preenche o arquivo com as informacoes existentes no arquivo
@@ -268,6 +281,7 @@ int inserirChave(ARVOREB *bTree, REGISTRO atual, int Pr, FILE *index){
 int criarIndiceArvoreB(FILE* dataset, FILE* indexBtree){
     CABECALHO *header;
     ARVOREB *bTree;
+    int i;
     REGISTRO aux;
 
     header = lerCabecalhoBin(dataset);
@@ -285,6 +299,10 @@ int criarIndiceArvoreB(FILE* dataset, FILE* indexBtree){
         }
     }
 
+    salvarCabecalhoArvoreB(indexBtree, bTree);
+
+    free(header);
+    free(bTree);
     return SUCESSO;
 }
 
