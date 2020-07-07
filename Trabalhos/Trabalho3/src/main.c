@@ -9,9 +9,9 @@
 
 int main(void){
 
-    int opc, RRN, n, i;
+    int opc, RRN, n, i, idNascimento;
 
-    char arqDataset[10], arqBin[15], arqIndice[30];
+    char arqDataset[10], arqBin[30], arqIndice[30], campo[30];
 
     FILE *dataset, *bin, *indice;
 
@@ -201,11 +201,27 @@ int main(void){
             
             break;
 
-        /*case 9:
+        case 9:
+            // Leitura e abertura dos arquivos de dados e de indice
+            scanf(" %s %s", arqBin, arqIndice);
+
+            if((bin = fopen(arqBin, "r + b")) == NULL || (indice = fopen(arqIndice, "r + b")) == NULL){
+                printf("Falha no processamento do arquivo.\n");
+            }
+            else{
+                scanf("%s %d", campo, &idNascimento);
+
+                buscaArvoreB(bin, indice, idNascimento);
+                // Fechar os arquivos
+            fclose(bin);
+            fclose(indice);           
+            }
+
             
+
             break;
 
-        case 10:
+        /*case 10:
 
             break;
 */
