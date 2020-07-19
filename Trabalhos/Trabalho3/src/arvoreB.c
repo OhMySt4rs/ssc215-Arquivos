@@ -39,15 +39,17 @@ void swap(int *a, int *b){
     return;
 }
 
-
+// Criar cabecalho da arqvore b
 ARVOREB* criarCabecalhoArvoreB(){
     ARVOREB* aux;
     int i;
     
+    // Alocar espacp
     aux = calloc(1, sizeof(ARVOREB));
 
     aux->noRaiz = VAZIO;
 
+    // Preencher com lixo quando necessario
     for(i = 0; i < 55; i++){
         aux->lixo[i] = '$';
     }
@@ -55,11 +57,13 @@ ARVOREB* criarCabecalhoArvoreB(){
     return aux;
 }
 
+// Criar pagina(no) da arvore
 PAGINA * criarPagina(){
     PAGINA* no;
     no = calloc(1, sizeof(PAGINA));
     int i;
 
+    // Inicializando os campos da arvore
     for(i = 0; i < M - 1; i++){
         no->P[i] = VAZIO;
         no->Pr[i] = VAZIO;
@@ -70,6 +74,7 @@ PAGINA * criarPagina(){
     return no;
 }
 
+// Ler cabecalho de uma arvore ja existente
 ARVOREB *lerCabecalhoArvoreB(FILE *index){
     ARVOREB *aux = calloc(1, sizeof(ARVOREB));
     
@@ -248,10 +253,10 @@ int inserir(FILE *index, ARVOREB *Btree, int RRNatual,int chave,
             salvarPagina(RRNatual, index, page); 
             Btree->nroChaves++;      
             // printf("Chaves apos insercao = ");
-            for(int i = 0; i < M -1; i++) printf("%d ", page->C[i]);
+            // for(int i = 0; i < M -1; i++) printf("%d ", page->C[i]);
             // printf("\n");
             //  printf("Refes apos insercao = ");
-            for(int i = 0; i < M ; i++) printf("%d ", page->P[i]);
+            // for(int i = 0; i < M ; i++) printf("%d ", page->P[i]);
             // printf("\n");
             free(page);
             return NAOPROMOVE;
