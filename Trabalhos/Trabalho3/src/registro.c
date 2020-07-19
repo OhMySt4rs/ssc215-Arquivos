@@ -10,7 +10,6 @@
 
 #define maior(a, b) (a >= b ? a : b)
 
-
 CABECALHO* lerCabecalhoBin(FILE* bin){ // Ler de um arquivo binário o cabeçalho e o retorna 
     CABECALHO *aux = calloc(1, sizeof(CABECALHO)); 
     
