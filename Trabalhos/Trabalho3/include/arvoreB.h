@@ -4,6 +4,13 @@
 typedef struct _arvoreB ARVOREB;
 typedef struct _noB PAGINA;
 
+#define VAZIO -1
+#define PROMOVE -3
+#define NAOPROMOVE -4
+#define DEURUIM -5
+#define ENCONTROU -2
+#define M 6
+
 int criarIndiceArvoreB(FILE* bin, FILE* indice);
 int buscarIndice(FILE* indexBtree, int chave);
 int inserirChave(ARVOREB *bTree, int chave, int Pr, FILE *index);

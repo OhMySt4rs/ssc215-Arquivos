@@ -185,11 +185,11 @@ int main(void){
             // Leitura e abertura dos arquivos de dados e de indice
             scanf(" %s %s", arqBin, arqIndice);
 
-            if((bin = fopen(arqBin, "r + b")) == NULL || (indice = fopen(arqIndice, "w + b")) == NULL){
+            if((bin = fopen(arqBin, "r + b")) == NULL || (indice = fopen(arqIndice, "w + b")) == NULL
+            || criarIndiceArvoreB(bin, indice) == DEURUIM){
                 printf("Falha no processamento do arquivo.\n");
             }
             else{
-                criarIndiceArvoreB(bin, indice);
                 // Fechar os arquivos
                 fclose(bin);
                 fclose(indice);
@@ -202,14 +202,10 @@ int main(void){
         case 9:
             // Leitura e abertura dos arquivos de dados e de indice
             scanf(" %s %s", arqBin, arqIndice);
-
-            if((bin = fopen(arqBin, "rb")) == NULL || (indice = fopen(arqIndice, "rb")) == NULL){
+            scanf("%s %d", campo, &idNascimento);
+            if((bin = fopen(arqBin, "rb")) == NULL || (indice = fopen(arqIndice, "rb")) == NULL || buscaArvoreB(bin, indice, idNascimento) == DEURUIM){
                 printf("Falha no processamento do arquivo.\n");
-            }
-            else{
-                scanf("%s %d", campo, &idNascimento);
-
-                buscaArvoreB(bin, indice, idNascimento);
+            }else{
                 // Fechar os arquivos
                 fclose(bin);
                 fclose(indice);           
