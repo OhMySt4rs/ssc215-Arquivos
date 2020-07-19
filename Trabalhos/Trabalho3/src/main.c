@@ -9,7 +9,7 @@
 
 int main(void){
 
-    int opc, RRN, n, i, idNascimento;
+    int opc, RRN, n, i, idNascimento, Pr;
 
     char arqDataset[10], arqBin[30], arqIndice[30], campo[30];
 
@@ -142,7 +142,7 @@ int main(void){
                 // Ele pode inserir n arquivos a cada vez
                 for(i = 0; i < n; i++){
                     // Caso exista inconsistencia no arquivo
-                    if(inserirRegistro(bin)){
+                    if(inserirRegistro(bin, &idNascimento, &Pr)){
                         printf("Falha no processamento do arquivo.");
                         return 0;
                     }
@@ -182,7 +182,6 @@ int main(void){
             break;
         
         case 8:
-
             // Leitura e abertura dos arquivos de dados e de indice
             scanf(" %s %s", arqBin, arqIndice);
 
@@ -191,21 +190,20 @@ int main(void){
             }
             else{
                 criarIndiceArvoreB(bin, indice);
+                // Fechar os arquivos
+                fclose(bin);
+                fclose(indice);
+                
+                binarioNaTela(arqIndice);
             }
-
-            // Fechar os arquivos
-            fclose(bin);
-            fclose(indice);
-            
-            binarioNaTela(arqIndice);
-            
+                        
             break;
 
         case 9:
             // Leitura e abertura dos arquivos de dados e de indice
             scanf(" %s %s", arqBin, arqIndice);
 
-            if((bin = fopen(arqBin, "r + b")) == NULL || (indice = fopen(arqIndice, "r + b")) == NULL){
+            if((bin = fopen(arqBin, "rb")) == NULL || (indice = fopen(arqIndice, "rb")) == NULL){
                 printf("Falha no processamento do arquivo.\n");
             }
             else{
@@ -213,19 +211,35 @@ int main(void){
 
                 buscaArvoreB(bin, indice, idNascimento);
                 // Fechar os arquivos
-            fclose(bin);
-            fclose(indice);           
+                fclose(bin);
+                fclose(indice);           
             }
-
-            
-
             break;
 
-        /*case 10:
+        case 10:
+            // Leirura do nome do arquivo binario
+            scanf("%s %s %d", arqBin, arqIndice, &n);
 
+            // Caso ocorram problemas na abertura do arquivo 
+            if((bin = fopen(arqBin, "r + b")) == NULL || (indice = fopen(arqIndice, "r + b")) == NULL){
+                printf("Falha no processamento do arquivo.\n");
+            } else{
+                // Ele pode inserir n arquivos a cada vez
+                for(i = 0; i < n; i++){
+                    // Caso exista inconsistencia no arquivo
+                    if(inserirRegistroArvoreB(bin, indice)){
+                        printf("Falha no processamento do arquivo.");
+                        return 0;
+                    }
+                }
+
+                // Fechar o arquivo
+                fclose(bin);
+                fclose(indice);
+
+                binarioNaTela(arqIndice);
+            }
             break;
-*/
     }
-
     return 0;
 } 

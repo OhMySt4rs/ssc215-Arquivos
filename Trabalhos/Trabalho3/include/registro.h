@@ -61,6 +61,6 @@ int buscaCombinadaRegistro(FILE* src);                                          
 int compararRegistro(REGISTRO *src, REGISTRO *aux);                             // Funcao que compara dois registros 
 int removerRegistroBin(FILE *src);                                              // Funcao que faz remocao logica de registros que atenderem os criterios especificos
 int atualizarRegistroBin(FILE* src, int RRN);                                   // Encontra um registro e o atualiza
-int inserirRegistro(FILE* bin);                                                 // Faz insercao de novos registros registros
+int inserirRegistro(FILE* bin, int*, int*);                                     // Faz insercao de novos registros registros
 
 #endif

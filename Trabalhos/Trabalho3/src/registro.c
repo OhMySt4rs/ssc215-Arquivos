@@ -593,7 +593,7 @@ int atualizarRegistroBin(FILE* src, int RRN){
 }
 
 // Insere novo registro
-int inserirRegistro(FILE* bin){
+int inserirRegistro(FILE* bin, int *idNascimento, int *Pr){
     CABECALHO *header;
     REGISTRO aux;
     char entrada[100];
@@ -630,6 +630,8 @@ int inserirRegistro(FILE* bin){
         header->RRNproxRegistro++;
     }
 
+    *Pr = pos;
+
     // Alocacao das variaveis auxiliares
     aux.cidadeBebe = calloc(100, sizeof(char));
     aux.cidadeMae = calloc(100, sizeof(char));
@@ -649,6 +651,7 @@ int inserirRegistro(FILE* bin){
     //id Nascimento
     scan_quote_string(entrada);
     aux.idNascimento = atoi(entrada);
+    *idNascimento = aux.idNascimento;
 
     //idade mae
     scan_quote_string(entrada);
